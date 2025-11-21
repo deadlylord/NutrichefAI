@@ -1,0 +1,7 @@
+{
+  "name": "NutriChef AI",
+  "description": "An intelligent food application that takes an image of your purchased products and helps you with recipes, spoilage time, and learns from your purchases to suggest a Colombian-style meal plan for breakfast, lunch, and dinner for the next occasion.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
