@@ -168,33 +168,73 @@ const ExtraFoodInput: React.FC<{ onAdd: (food: ExtraFoodItem) => void }> = ({ on
     );
 };
 
-// --- Daily Summary ---
+// --- Daily Family Summary (Projected) ---
 const DailyFamilySummary: React.FC<{
     family: FamilyMember[],
-    currentMacros: { calories: number, protein: number, carbs: number, fat: number }
-}> = ({ family, currentMacros }) => {
+    plannedMacros: { calories: number, protein: number, carbs: number, fat: number }
+}> = ({ family, plannedMacros }) => {
     return (
-        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm mb-6">
-            <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                Progreso Diario Familiar
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h4 className="font-bold text-gray-800 mb-1 flex items-center gap-2 text-lg">
+                <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                Análisis de Cobertura Familiar
             </h4>
-            <div className="space-y-4">
-                {family.map(member => (
-                    <div key={member.id} className="text-xs">
-                        <div className="flex justify-between mb-1">
-                            <span className="font-bold text-gray-700">{member.name}</span>
-                            <span className="text-gray-500">
-                                {currentMacros.calories} / {member.dailyRequirements.calories} kcal
-                            </span>
+            <p className="text-xs text-gray-500 mb-4">
+                Proyección basada en el menú completo del día. Ajusta la ración de cada persona según la sugerencia.
+            </p>
+            <div className="space-y-5">
+                {family.map(member => {
+                    // Calculate Portion Multiplier based on Calories
+                    // Assume the "Base Plan" is 1 portion. How many portions does this member need?
+                    const portionMultiplier = plannedMacros.calories > 0 
+                        ? member.dailyRequirements.calories / plannedMacros.calories 
+                        : 1;
+                    
+                    const projected = {
+                        protein: plannedMacros.protein * portionMultiplier,
+                        carbs: plannedMacros.carbs * portionMultiplier,
+                        fat: plannedMacros.fat * portionMultiplier
+                    };
+
+                    return (
+                        <div key={member.id} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div className="flex justify-between items-center mb-2">
+                                <div>
+                                    <span className="font-bold text-gray-800 block">{member.name}</span>
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">
+                                        Meta: {member.dailyRequirements.calories.toFixed(0)} kcal
+                                    </span>
+                                </div>
+                                <div className="text-right">
+                                    <span className={`block text-sm font-bold px-2 py-0.5 rounded-md ${portionMultiplier > 1.1 ? 'bg-blue-100 text-blue-700' : portionMultiplier < 0.9 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                                        Servir: x{portionMultiplier.toFixed(1)}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">ración sugerida</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                <ProgressBar 
+                                    label="Proteína" 
+                                    color="bg-red-400" 
+                                    value={projected.protein} 
+                                    total={member.dailyRequirements.protein} 
+                                />
+                                <ProgressBar 
+                                    label="Carb" 
+                                    color="bg-green-400" 
+                                    value={projected.carbs} 
+                                    total={member.dailyRequirements.carbs} 
+                                />
+                                <ProgressBar 
+                                    label="Grasa" 
+                                    color="bg-blue-400" 
+                                    value={projected.fat} 
+                                    total={member.dailyRequirements.fat} 
+                                />
+                            </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                            <ProgressBar label="Prot" color="bg-red-400" value={currentMacros.protein} total={member.dailyRequirements.protein} />
-                            <ProgressBar label="Carb" color="bg-green-400" value={currentMacros.carbs} total={member.dailyRequirements.carbs} />
-                            <ProgressBar label="Grasa" color="bg-blue-400" value={currentMacros.fat} total={member.dailyRequirements.fat} />
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -216,12 +256,12 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
   const weekDays = Object.keys(menu) as (keyof WeeklyMealPlan)[];
   const mealTypes: (keyof Omit<DailyMeal, 'waterIntakeLiters'>)[] = ['breakfast', 'morningSnack', 'lunch', 'afternoonSnack', 'dinner'];
 
-  const calculateDailyTotal = (day: string) => {
+  const calculateDailyTotal = (day: string, onlyConsumed: boolean = true) => {
       let total = { calories: 0, protein: 0, carbs: 0, fat: 0 };
       
-      // Add planned meals
+      // Add meals
       mealTypes.forEach(type => {
-          if (consumedMeals.has(`${day}-${type}`)) {
+          if (!onlyConsumed || consumedMeals.has(`${day}-${type}`)) {
               const meal = menu[day as keyof WeeklyMealPlan][type] as Meal;
               total.calories += meal.calories;
               total.protein += meal.protein;
@@ -230,7 +270,7 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
           }
       });
 
-      // Add extra foods
+      // Add extra foods (Assume extras are part of the daily nutrition plan if they exist)
       const extras = extraFoods[day] || [];
       extras.forEach(extra => {
           total.calories += extra.calories;
@@ -250,8 +290,14 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
         </h2>
         <div className="space-y-3">
             {weekDays.map((day, index) => {
-                const dailyTotal = calculateDailyTotal(day);
+                const consumedTotal = calculateDailyTotal(day, true);
+                const plannedTotal = calculateDailyTotal(day, false);
                 const extras = extraFoods[day] || [];
+
+                // Calculate general progress for the summary bar based on the FIRST family member as a proxy for "General Completion"
+                const mainProgress = family.length > 0 
+                    ? (consumedTotal.calories / family[0].dailyRequirements.calories) * 100
+                    : 0;
 
                 return (
                     <details
@@ -263,11 +309,11 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
                             <div className="flex items-center gap-3">
                                 <h3 className="text-xl font-bold text-gray-800 capitalize">{dayTranslations[day]}</h3>
                                 {family.length > 0 && (
-                                    <div className="hidden sm:flex gap-1">
-                                        {/* Mini indicators */}
-                                        <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                            <div className="bg-green-500 h-full" style={{width: `${Math.min(100, (dailyTotal.calories / family[0].dailyRequirements.calories) * 100)}%`}}></div>
+                                    <div className="hidden sm:flex gap-1 flex-col justify-center">
+                                        <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                            <div className="bg-green-500 h-full transition-all duration-500" style={{width: `${Math.min(100, mainProgress)}%`}}></div>
                                         </div>
+                                        <span className="text-[10px] text-gray-400 font-medium text-center">Progreso del día</span>
                                     </div>
                                 )}
                             </div>
@@ -286,7 +332,7 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
                         </summary>
                         <div className="p-4 border-t border-gray-200">
                             {family.length > 0 && (
-                                <DailyFamilySummary family={family} currentMacros={dailyTotal} />
+                                <DailyFamilySummary family={family} plannedMacros={plannedTotal} />
                             )}
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -335,7 +381,7 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
                             <div className="mt-6 pt-4 border-t border-gray-100">
                                 {extras.length > 0 && (
                                     <div className="mb-4">
-                                        <h4 className="font-bold text-gray-700 text-sm mb-2">Extras Consumidos:</h4>
+                                        <h4 className="font-bold text-gray-700 text-sm mb-2">Extras Consumidos (Global):</h4>
                                         <div className="flex flex-wrap gap-2">
                                             {extras.map(item => (
                                                 <span key={item.id} className="inline-flex items-center bg-orange-50 border border-orange-200 text-orange-800 text-xs px-2 py-1 rounded-lg">
