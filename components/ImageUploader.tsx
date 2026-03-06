@@ -1,3 +1,4 @@
+
 import React, { useCallback, useState, useRef } from 'react';
 import { UploadIcon, CameraIcon, TrashIcon } from './IconComponents';
 
@@ -23,6 +24,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onFilesChange, fil
     onFilesChange(files.filter((_, index) => index !== indexToRemove));
   };
   
+  const handleRemoveAll = () => {
+    if (window.confirm('¿Estás seguro de eliminar todas las imágenes?')) {
+        onFilesChange([]);
+    }
+  };
+
   const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -55,26 +62,37 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onFilesChange, fil
   return (
     <div className="w-full">
       {files.length > 0 && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mb-4">
-              {files.map((file, index) => (
-                  <div key={index} className="relative group aspect-square rounded-2xl overflow-hidden shadow-md border border-gray-100">
-                      <img 
-                        src={URL.createObjectURL(file)} 
-                        alt={`Preview ${index}`} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                        onLoad={e => URL.revokeObjectURL(e.currentTarget.src)}
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                          <button 
-                              onClick={() => handleRemoveFile(index)}
-                              className="w-8 h-8 bg-white text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform hover:scale-110 shadow-lg"
-                              aria-label="Remove image"
-                          >
-                            <TrashIcon />
-                          </button>
+          <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-bold text-gray-500">{files.length} imágenes seleccionadas</span>
+                  <button 
+                      onClick={handleRemoveAll}
+                      className="text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition-colors"
+                  >
+                      <TrashIcon /> Borrar Todas
+                  </button>
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {files.map((file, index) => (
+                      <div key={index} className="relative group aspect-square rounded-2xl overflow-hidden shadow-md border border-gray-100">
+                          <img 
+                            src={URL.createObjectURL(file)} 
+                            alt={`Preview ${index}`} 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                            onLoad={e => URL.revokeObjectURL(e.currentTarget.src)}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                              <button 
+                                  onClick={() => handleRemoveFile(index)}
+                                  className="w-8 h-8 bg-white text-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform hover:scale-110 shadow-lg"
+                                  aria-label="Remove image"
+                              >
+                                <TrashIcon />
+                              </button>
+                          </div>
                       </div>
-                  </div>
-              ))}
+                  ))}
+              </div>
           </div>
       )}
 

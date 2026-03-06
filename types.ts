@@ -10,6 +10,13 @@ export interface Recipe {
   description: string;
   ingredientsUsed: string[];
   instructions: string;
+  youtubeQuery?: string;
+}
+
+export interface FoodBalance {
+    vegetables: 'high' | 'medium' | 'low';
+    fruits: 'high' | 'medium' | 'low';
+    protein: 'high' | 'medium' | 'low';
 }
 
 export interface Meal {
@@ -23,6 +30,8 @@ export interface Meal {
     instructions: string; // Detailed preparation instructions
     imageUrl?: string; // The base64 URL of the generated image
     isImageLoading?: boolean; // To track on-demand image generation
+    youtubeQuery?: string;
+    foodBalance?: FoodBalance;
 }
 
 export interface DailyMeal {
@@ -109,4 +118,7 @@ export interface ExtraFoodItem {
     protein: number;
     carbs: number;
     fat: number;
+    assignedTo?: string; // ID of family member, or undefined if shared
 }
+
+export type Tab = 'foods' | 'mealPlan' | 'family' | 'tips';

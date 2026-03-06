@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -29,7 +30,7 @@
     <style>
       body {
         font-family: 'Poppins', sans-serif;
-        background-color: #F5F7F5; /* Softer, more professional off-white */
+        background-color: #F5F7F5; /* Reverted to soft original color */
       }
       /* Custom scrollbar for cleaner look */
       ::-webkit-scrollbar {
@@ -46,9 +47,23 @@
         background: #94A3B8; 
       }
     </style>
-  </head>
-  <body class="text-slate-800 antialiased selection:bg-green-200 selection:text-green-900">
-    <div id="root"></div>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="h-full text-slate-800 antialiased selection:bg-green-200 selection:text-green-900">
+    <div id="root" class="h-full"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>

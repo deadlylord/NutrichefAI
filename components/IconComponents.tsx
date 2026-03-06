@@ -1,6 +1,15 @@
 
 import React from 'react';
 
+export const NutriChefLogo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-10 h-10">
+    <path d="M12 3v18M12 3c4.5 0 9 4.5 9 10 0 3-1.5 6-4.5 6H12M12 3C7.5 3 3 7.5 3 13c0 3 1.5 6 4.5 6H12" stroke="#1E4620" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 12c-3 0-5-2-5-5 0-2 2-3 5-3" stroke="#8BA888" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M12 15c2 0 3-1 3-2" stroke="#8BA888" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="12" cy="13" r="1" fill="#1E4620"/>
+  </svg>
+);
+
 export const UploadIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -41,6 +50,12 @@ export const CameraIcon = () => (
 export const TrashIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+);
+
+export const PencilIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
     </svg>
 );
 
@@ -108,5 +123,29 @@ export const PlusCircleIcon = () => (
 export const CheckCircleIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
+export const YouTubeIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+    </svg>
+);
+
+export const LeafIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+  </svg>
+);
+
+export const AppleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19C10.5 19 9 18 9 16C9 14 10.5 13 12 13C13.5 13 15 14 15 16C15 18 13.5 19 12 19ZM12 13C12 13 10 9 12 5C14 9 12 13 12 13Z" />
+    </svg>
+);
+
+export const MeatIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.5 5.5C15.5 5.5 18 8 18 11C18 14 15.5 16.5 12 16.5C8.5 16.5 6 14 6 11C6 8 8.5 5.5 8.5 5.5C8.5 5.5 10 7 12 7C14 7 15.5 5.5 15.5 5.5Z" />
     </svg>
 );

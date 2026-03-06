@@ -2,24 +2,24 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { AnalysisResult, WeeklyMealPlan, FamilyMember, DailyRequirements, ComplementarySuggestion, NutritionalAssessment } from '../types';
 
-if (!process.env.API_KEY || 'FAKE_API_KEY_FOR_DEVELOPMENT') {
+if (!process.env.API_KEY) {
   throw new Error("API_KEY environment variable is not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || 'FAKE_API_KEY_FOR_DEVELOPMENT' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const analysisSchema = {
   type: Type.OBJECT,
   properties: {
     identifiedIngredients: {
       type: Type.ARRAY,
-      description: 'Lista de todos los ingredientes alimenticios identificados en las imÃ¡genes, sin duplicados. ESTRICTAMENTE EN ESPAÃOL.',
+      description: 'Lista de todos los ingredientes alimenticios identificados en las imágenes, sin duplicados. ESTRICTAMENTE EN ESPAÑOL.',
       items: {
         type: Type.OBJECT,
         properties: {
-          name: { type: Type.STRING, description: 'Nombre comÃºn del ingrediente en ESPAÃOL (ej. "Tomate", "Leche", "Pollo").' },
-          spoilageTime: { type: Type.STRING, description: 'EstimaciÃ³n REALISTA y CONSERVADORA del tiempo de vida Ãºtil. Para frutas y verduras frescas, asume madurez media (ej. "3-5 dÃ­as"). Usa formato "X dÃ­as" o "X semanas".' },
-          category: { type: Type.STRING, description: 'CategorÃ­a del ingrediente en ESPAÃOL (ej. "Frutas y Verduras", "Carnes", "LÃ¡cteos", "Despensa").' }
+          name: { type: Type.STRING, description: 'Nombre común del ingrediente en ESPAÑOL (ej. "Tomate", "Leche", "Pollo").' },
+          spoilageTime: { type: Type.STRING, description: 'Estimación REALISTA y CONSERVADORA del tiempo de vida útil. Para frutas y verduras frescas, asume madurez media (ej. "3-5 días"). Usa formato "X días" o "X semanas".' },
+          category: { type: Type.STRING, description: 'Categoría del ingrediente en ESPAÑOL (ej. "Frutas y Verduras", "Carnes", "Lácteos", "Despensa").' }
         },
         required: ['name', 'spoilageTime', 'category']
       }
@@ -30,16 +30,17 @@ const analysisSchema = {
       items: {
         type: Type.OBJECT,
         properties: {
-          title: { type: Type.STRING, description: 'TÃ­tulo de la receta en EspaÃ±ol.' },
-          description: { type: Type.STRING, description: 'Breve descripciÃ³n apetitosa.' },
+          title: { type: Type.STRING, description: 'Título de la receta en Español.' },
+          description: { type: Type.STRING, description: 'Breve descripción apetitosa.' },
           ingredientsUsed: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
             description: 'Lista de ingredientes usados.'
           },
-          instructions: { type: Type.STRING, description: 'Pasos detallados.' }
+          instructions: { type: Type.STRING, description: 'Pasos detallados.' },
+          youtubeQuery: { type: Type.STRING, description: 'Texto de búsqueda optimizado para YouTube para encontrar un video de esta receta (ej. "Receta bandeja paisa paso a paso").' }
         },
-        required: ['title', 'description', 'ingredientsUsed', 'instructions']
+        required: ['title', 'description', 'ingredientsUsed', 'instructions', 'youtubeQuery']
       }
     }
   },
@@ -50,15 +51,26 @@ const mealSchema = {
     type: Type.OBJECT,
     properties: {
         name: { type: Type.STRING, description: 'Nombre del plato.' },
-        calories: { type: Type.NUMBER, description: 'EstimaciÃ³n de calorÃ­as totales.' },
-        protein: { type: Type.NUMBER, description: 'Gramos de proteÃ­na.' },
+        calories: { type: Type.NUMBER, description: 'Estimación de calorías totales.' },
+        protein: { type: Type.NUMBER, description: 'Gramos de proteína.' },
         carbs: { type: Type.NUMBER, description: 'Gramos de carbohidratos.' },
         fat: { type: Type.NUMBER, description: 'Gramos de grasa.' },
         micronutrients: { type: Type.STRING, description: 'Breve lista de micronutrientes clave (ej. "Rico en Vitamina C, Hierro y Potasio").' },
-        imagePrompt: { type: Type.STRING, description: 'Un prompt detallado y vÃ­vido en inglÃ©s para un modelo de generaciÃ³n de imÃ¡genes AI, estilo fotografÃ­a de alimentos editorial. Ejemplo: "Professional food photography of a traditional Colombian bandeja paisa, soft lighting, 4k resolution".' },
-        instructions: { type: Type.STRING, description: 'Instrucciones de preparaciÃ³n paso a paso.' }
+        imagePrompt: { type: Type.STRING, description: 'Un prompt detallado y vívido en inglés para un modelo de generación de imágenes AI, estilo fotografía de alimentos editorial. Ejemplo: "Professional food photography of a traditional Colombian bandeja paisa, soft lighting, 4k resolution".' },
+        instructions: { type: Type.STRING, description: 'Instrucciones de preparación paso a paso.' },
+        youtubeQuery: { type: Type.STRING, description: 'Query de búsqueda para YouTube (ej. "Cómo hacer Ajiaco Santafereño").' },
+        foodBalance: {
+            type: Type.OBJECT,
+            properties: {
+                vegetables: { type: Type.STRING, enum: ['high', 'medium', 'low'] },
+                fruits: { type: Type.STRING, enum: ['high', 'medium', 'low'] },
+                protein: { type: Type.STRING, enum: ['high', 'medium', 'low'] }
+            },
+            required: ['vegetables', 'fruits', 'protein'],
+            description: 'Nivel de presencia de estos grupos en el plato.'
+        }
     },
-    required: ['name', 'calories', 'protein', 'carbs', 'fat', 'micronutrients', 'imagePrompt', 'instructions']
+    required: ['name', 'calories', 'protein', 'carbs', 'fat', 'micronutrients', 'imagePrompt', 'instructions', 'youtubeQuery', 'foodBalance']
 };
 
 const dailyRequirementsSchema = {
@@ -75,21 +87,21 @@ const dailyRequirementsSchema = {
 const assessmentSchema = {
     type: Type.OBJECT,
     properties: {
-        score: { type: Type.NUMBER, description: 'Puntaje de 1 a 10 indicando quÃ© tan balanceada es la compra.' },
+        score: { type: Type.NUMBER, description: 'Puntaje de 1 a 10 indicando qué tan balanceada es la compra.' },
         summary: { type: Type.STRING, description: 'Resumen corto de 1 frase sobre el balance de la compra.' },
         missingGroups: { 
             type: Type.ARRAY, 
             items: { type: Type.STRING }, 
-            description: 'Grupos alimenticios faltantes o bajos (ej: "ProteÃ­nas", "Fibra").' 
+            description: 'Grupos alimenticios faltantes o bajos (ej: "Proteínas", "Fibra").' 
         },
         suggestions: {
             type: Type.ARRAY,
             items: {
                 type: Type.OBJECT,
                 properties: {
-                    item: { type: Type.STRING, description: 'Producto especÃ­fico sugerido para comprar.' },
-                    category: { type: Type.STRING, description: 'CategorÃ­a del producto.' },
-                    reason: { type: Type.STRING, description: 'Por quÃ© ayuda al balance.' }
+                    item: { type: Type.STRING, description: 'Producto específico sugerido para comprar.' },
+                    category: { type: Type.STRING, description: 'Categoría del producto.' },
+                    reason: { type: Type.STRING, description: 'Por qué ayuda al balance.' }
                 },
                 required: ['item', 'category', 'reason']
             }
@@ -106,7 +118,7 @@ export const calculateDailyRequirements = async (
     const prompt = `
         Calcula necesidades nutricionales para:
         - Edad: ${age}
-        - GÃ©nero: ${gender}
+        - Género: ${gender}
         - Actividad: ${activityLevel}
         - Objetivo: ${goal}
         
@@ -135,17 +147,17 @@ export const analyzeGroceryImages = async (
   imagesBase64: string[]
 ): Promise<AnalysisResult> => {
   const prompt = `
-    Eres NutriChef AI, un experto culinario. Analiza las imÃ¡genes de compras.
+    Eres NutriChef AI, un experto culinario. Analiza las imágenes de compras.
     
     IMPORTANTE:
-    1.  **IDIOMA**: Devuelve TODO el contenido (nombres de ingredientes, recetas, descripciones) estricta y exclusivamente en **ESPAÃOL**.
-    2.  **PRECISIÃN DE VENCIMIENTO**: Para frutas y verduras frescas, sÃ© **conservador**. Asume que ya han pasado tiempo en el estante. 
-        - Ejemplo: Fresas (2-3 dÃ­as), Bananos (3-5 dÃ­as), Aguacate maduro (1-2 dÃ­as). 
+    1.  **IDIOMA**: Devuelve TODO el contenido (nombres de ingredientes, recetas, descripciones) estricta y exclusivamente en **ESPAÑOL**.
+    2.  **PRECISIÓN DE VENCIMIENTO**: Para frutas y verduras frescas, sé **conservador**. Asume que ya han pasado tiempo en el estante. 
+        - Ejemplo: Fresas (2-3 días), Bananos (3-5 días), Aguacate maduro (1-2 días). 
         - No des rangos amplios como "1-2 semanas" para productos delicados.
     
     Genera un JSON con:
-    1.  **identifiedIngredients**: Lista de alimentos en ESPAÃOL. CategorÃ­a en espaÃ±ol.
-    2.  **recipeSuggestions**: 3 recetas usando estos ingredientes.
+    1.  **identifiedIngredients**: Lista de alimentos en ESPAÑOL. Categoría en español.
+    2.  **recipeSuggestions**: 3 recetas usando estos ingredientes, incluyendo una query para buscar en youtube.
   `;
 
   const imageParts = imagesBase64.map(imgBase64 => ({
@@ -171,7 +183,7 @@ export const analyzeGroceryImages = async (
     return JSON.parse(jsonText) as AnalysisResult;
   } catch (error) {
     console.error("Error analyzing image with Gemini:", error);
-    throw new Error("No se pudo realizar el anÃ¡lisis. Intenta con una imagen mÃ¡s clara.");
+    throw new Error("No se pudo realizar el análisis. Intenta con una imagen más clara.");
   }
 };
 
@@ -179,14 +191,14 @@ export const evaluateNutritionalBalance = async (
     ingredients: string[]
 ): Promise<NutritionalAssessment> => {
     const prompt = `
-        ActÃºa como un Nutricionista Experto.
+        Actúa como un Nutricionista Experto.
         Analiza esta lista de compras actual: [${ingredients.join(', ')}].
         
-        EvalÃºa el balance nutricional de la compra (ProteÃ­nas, Carbohidratos, Grasas, Frutas/Verduras).
-        Identifica quÃ© grupos faltan o estÃ¡n bajos para una dieta saludable completa.
-        Sugiere 5 alimentos especÃ­ficos para AGREGAR a la lista de compras para balancear la despensa.
+        Evalúa el balance nutricional de la compra (Proteínas, Carbohidratos, Grasas, Frutas/Verduras).
+        Identifica qué grupos faltan o están bajos para una dieta saludable completa.
+        Sugiere 5 alimentos específicos para AGREGAR a la lista de compras para balancear la despensa.
         
-        Responde en ESPAÃOL JSON.
+        Responde en ESPAÑOL JSON.
     `;
 
     try {
@@ -216,11 +228,11 @@ export const generateWeeklyMealPlan = async (
         properties: {
             dailyPlans: {
                 type: Type.ARRAY,
-                description: 'Array de 7 dÃ­as (sunday a saturday).',
+                description: 'Array de 7 días (sunday a saturday).',
                 items: {
                     type: Type.OBJECT,
                     properties: {
-                        day: { type: Type.STRING, description: 'Nombre del dÃ­a en inglÃ©s minÃºsculas (ej. "monday").' },
+                        day: { type: Type.STRING, description: 'Nombre del día en inglés minúsculas (ej. "monday").' },
                         breakfast: mealSchema,
                         morningSnack: mealSchema,
                         lunch: mealSchema,
@@ -235,20 +247,22 @@ export const generateWeeklyMealPlan = async (
         required: ['dailyPlans']
     };
 
-    const familyDescription = familyProfile.map(p => `${p.name} (${p.age} aÃ±os, objetivo: ${p.goal})`).join('; ');
+    const familyDescription = familyProfile.map(p => `${p.name} (${p.age} años, objetivo: ${p.goal})`).join('; ');
 
     const prompt = `
-        Crea un menÃº semanal saludable estilo COLOMBIANO.
+        Crea un menú semanal saludable estilo COLOMBIANO.
         Ingredientes disponibles: [${ingredients.join(', ')}]
         Historial previo: [${purchaseHistory.join(', ')}]
         Familia: [${familyDescription}]
 
         REGLAS:
-        1. Idioma: TODO EN ESPAÃOL.
+        1. Idioma: TODO EN ESPAÑOL.
         2. Prioriza usar los ingredientes disponibles.
-        3. Si faltan ingredientes esenciales, asume que se comprarÃ¡n (sugeridos previamente).
-        4. AdaptaciÃ³n infantil para menores de 2 aÃ±os.
-        5. JSON estricto.
+        3. Si faltan ingredientes esenciales, asume que se comprarán (sugeridos previamente).
+        4. Adaptación infantil para menores de 2 años.
+        5. Incluye 'foodBalance' (high/medium/low) para Verduras, Frutas, Proteína en cada plato.
+        6. Incluye 'youtubeQuery' para buscar la receta.
+        7. JSON estricto.
     `;
 
     try {
@@ -286,6 +300,37 @@ export const generateWeeklyMealPlan = async (
     } catch (error) {
         console.error("Error generating meal plan:", error);
         throw new Error("Error al generar el plan de comidas.");
+    }
+};
+
+export const findMealImage = async (mealName: string): Promise<string | null> => {
+    const prompt = `
+        Busca una imagen real, pública y de alta calidad para el plato de comida: "${mealName}".
+        Encuentra una URL directa que termine en .jpg, .png o .webp de un sitio como Wikimedia Commons, Food Network, o blogs de cocina populares que permitan visualización.
+        
+        Responde SOLAMENTE con la URL de la imagen en formato texto plano.
+        Si no encuentras una URL directa de imagen, devuelve "null".
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [{ text: prompt }] },
+            config: {
+                tools: [{ googleSearch: {} }]
+            },
+        });
+
+        const text = response.text.trim();
+        const urlMatch = text.match(/(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|webp))/i);
+        
+        if (urlMatch) {
+            return urlMatch[0];
+        }
+        return null;
+    } catch (error) {
+        console.error("Error searching for meal image:", error);
+        return null;
     }
 };
 
@@ -330,7 +375,7 @@ export const getIngredientSuggestions = async (query: string, existingIngredient
     };
 
     const prompt = `
-        Sugiere 5 ingredientes de supermercado (comida) en ESPAÃOL que comiencen con "${query}".
+        Sugiere 5 ingredientes de supermercado (comida) en ESPAÑOL que comiencen con "${query}".
         No incluyas: [${existingIngredients.join(', ')}].
         Contexto: Cocina colombiana/latina.
     `;
@@ -351,6 +396,90 @@ export const getIngredientSuggestions = async (query: string, existingIngredient
     }
 };
 
+export const getFoodNutritionalInfo = async (foodName: string) => {
+    const schema = {
+        type: Type.OBJECT,
+        properties: {
+            calories: { type: Type.NUMBER },
+            protein: { type: Type.NUMBER },
+            carbs: { type: Type.NUMBER },
+            fat: { type: Type.NUMBER }
+        },
+        required: ['calories', 'protein', 'carbs', 'fat']
+    };
+
+    const prompt = `
+        Estima la información nutricional para 1 porción normal de: "${foodName}".
+        Devuelve JSON.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [{ text: prompt }] },
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: schema,
+            },
+        });
+        return JSON.parse(response.text.trim());
+    } catch (error) {
+        console.error("Error getting food info:", error);
+        return { calories: 0, protein: 0, carbs: 0, fat: 0 };
+    }
+};
+
+export const searchFoodDatabase = async (query: string) => {
+    if (!query) return [];
+
+    const schema = {
+        type: Type.OBJECT,
+        properties: {
+            results: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        name: { type: Type.STRING },
+                        calories: { type: Type.NUMBER },
+                        protein: { type: Type.NUMBER },
+                        carbs: { type: Type.NUMBER },
+                        fat: { type: Type.NUMBER },
+                        category: { type: Type.STRING },
+                        servingSize: { type: Type.STRING }
+                    },
+                    required: ['name', 'calories', 'protein', 'carbs', 'fat', 'category']
+                }
+            }
+        },
+        required: ['results']
+    };
+
+    const prompt = `
+        Busca alimentos que coincidan con "${query}".
+        Devuelve 5 opciones variadas con su información nutricional aproximada.
+        Si la búsqueda es genérica (ej. "proteína"), sugiere alimentos altos en eso.
+        Contexto: Comida colombiana y general.
+        Responde en JSON.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [{ text: prompt }] },
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: schema,
+            },
+        });
+        const json = JSON.parse(response.text.trim());
+        return json.results || [];
+    } catch (error) {
+        console.error("Error searching food database:", error);
+        return [];
+    }
+};
+
 export const generateHealthTips = async (): Promise<string[]> => {
     const schema = {
         type: Type.OBJECT,
@@ -364,7 +493,7 @@ export const generateHealthTips = async (): Promise<string[]> => {
     };
 
     const prompt = `
-        Genera 7 consejos cortos y motivadores sobre nutriciÃ³n y salud en ESPAÃOL para una familia colombiana.
+        Genera 7 consejos cortos y motivadores sobre nutrición y salud en ESPAÑOL para una familia colombiana.
     `;
     
     try {
@@ -380,7 +509,7 @@ export const generateHealthTips = async (): Promise<string[]> => {
         return json.tips || [];
     } catch (error) {
         console.error("Error generating health tips:", error);
-        return ["Bebe mÃ¡s agua hoy.", "Come frutas y verduras."];
+        return ["Bebe más agua hoy.", "Come frutas y verduras."];
     }
 };
 
@@ -398,8 +527,8 @@ export const generateComplementarySuggestions = async (
                 items: {
                     type: Type.OBJECT,
                     properties: {
-                        productName: { type: Type.STRING, description: 'Nombre del producto en ESPAÃOL.' },
-                        reason: { type: Type.STRING, description: 'RazÃ³n en EspaÃ±ol.' },
+                        productName: { type: Type.STRING, description: 'Nombre del producto en ESPAÑOL.' },
+                        reason: { type: Type.STRING, description: 'Razón en Español.' },
                     },
                     required: ['productName', 'reason'],
                 }
@@ -409,7 +538,7 @@ export const generateComplementarySuggestions = async (
     };
 
     const prompt = `
-        Analiza el plan de comidas y sugiere 5 productos complementarios en ESPAÃOL para comprar.
+        Analiza el plan de comidas y sugiere 5 productos complementarios en ESPAÑOL para comprar.
         NO sugieras: [${existingIngredients.join(', ')}].
     `;
 

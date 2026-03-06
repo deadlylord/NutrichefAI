@@ -3,11 +3,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ImageUploader } from './components/ImageUploader';
 import { AnalysisDisplay } from './components/AnalysisDisplay';
 import LoadingSpinner from './components/LoadingSpinner';
-import { SparklesIcon, CalendarIcon } from './components/IconComponents';
-import { analyzeGroceryImages, generateWeeklyMealPlan, generateMealImage, generateHealthTips, generateComplementarySuggestions, calculateDailyRequirements, evaluateNutritionalBalance } from './services/geminiService';
+import { SparklesIcon, CalendarIcon, TrashIcon } from './components/IconComponents';
+import { analyzeGroceryImages, generateWeeklyMealPlan, generateMealImage, findMealImage, generateHealthTips, generateComplementarySuggestions, calculateDailyRequirements, evaluateNutritionalBalance } from './services/geminiService';
 import { fileToBase64 } from './utils/fileUtils';
 import { calculateSpoilageInfo } from './utils/dateUtils';
-import type { AnalysisResult, WeeklyMealPlan, PurchaseRecord, DailyMeal, FamilyMember, ComplementarySuggestion, ExpiringItem, NutritionalAssessment, ShoppingListItem, SuggestionItem, ExtraFoodItem } from './types';
+import type { AnalysisResult, WeeklyMealPlan, PurchaseRecord, DailyMeal, FamilyMember, ComplementarySuggestion, ExpiringItem, NutritionalAssessment, ShoppingListItem, SuggestionItem, ExtraFoodItem, Tab } from './types';
 import WeeklyMenuDisplay from './components/WeeklyMenuDisplay';
 import PurchaseHistoryDisplay from './components/PurchaseHistoryDisplay';
 import ManualIngredientInput from './components/ManualIngredientInput';
@@ -20,7 +20,7 @@ import ShoppingList from './components/ShoppingList';
 import Header from './components/Header';
 import BottomNavBar from './components/BottomNavBar';
 import { db } from './services/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, limit, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 
 const getTodayDateString = () => {
@@ -30,8 +30,6 @@ const getTodayDateString = () => {
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
-
-export type Tab = 'foods' | 'mealPlan' | 'family' | 'tips';
 
 function App() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -51,10 +49,107 @@ function App() {
   const [expiringItems, setExpiringItems] = useState<ExpiringItem[]>([]);
   const [nutritionalAssessment, setNutritionalAssessment] = useState<NutritionalAssessment | null>(null);
   const [shoppingList, setShoppingList] = useState<ShoppingListItem[]>([]);
+  const [familyName, setFamilyName] = useState<string>('Familia Gutiérrez');
+  const [cloudError, setCloudError] = useState<boolean>(false);
   
   // State for tracking meal consumption
   const [consumedMeals, setConsumedMeals] = useState<Set<string>>(new Set());
   const [extraFoods, setExtraFoods] = useState<Record<string, ExtraFoodItem[]>>({});
+
+  // --- Persistence Logic ---
+
+  // Load Family Name
+  useEffect(() => {
+    const savedName = localStorage.getItem('familyName');
+    if (savedName) {
+        setFamilyName(savedName);
+    }
+  }, []);
+
+  const handleFamilyNameChange = (newName: string) => {
+    setFamilyName(newName);
+    localStorage.setItem('familyName', newName);
+  }
+
+  // Load Active Menu from Firestore
+  useEffect(() => {
+    const loadActiveMenu = async () => {
+        try {
+            const docRef = doc(db, "activeMenu", "current");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.weeklyMenu) setWeeklyMenu(data.weeklyMenu);
+                if (data.analysisResult) setAnalysisResult(data.analysisResult);
+                if (data.complementarySuggestions) setComplementarySuggestions(data.complementarySuggestions);
+                if (data.consumedMeals) setConsumedMeals(new Set(data.consumedMeals));
+                if (data.extraFoods) setExtraFoods(data.extraFoods);
+                
+                // If we have a menu loaded, set the tab to mealPlan
+                if (data.weeklyMenu) setActiveTab('mealPlan');
+                setCloudError(false);
+            } else {
+                // Try localStorage fallback
+                const savedMenu = localStorage.getItem('activeMenu');
+                if (savedMenu) {
+                    const data = JSON.parse(savedMenu);
+                    if (data.weeklyMenu) setWeeklyMenu(data.weeklyMenu);
+                    if (data.analysisResult) setAnalysisResult(data.analysisResult);
+                    if (data.complementarySuggestions) setComplementarySuggestions(data.complementarySuggestions);
+                    if (data.consumedMeals) setConsumedMeals(new Set(data.consumedMeals));
+                    if (data.extraFoods) setExtraFoods(data.extraFoods);
+                    if (data.weeklyMenu) setActiveTab('mealPlan');
+                }
+            }
+        } catch (e) {
+            console.warn("Cloud sync unavailable, working in local mode:", e);
+            setCloudError(true);
+            const savedMenu = localStorage.getItem('activeMenu');
+            if (savedMenu) {
+                const data = JSON.parse(savedMenu);
+                if (data.weeklyMenu) setWeeklyMenu(data.weeklyMenu);
+                if (data.analysisResult) setAnalysisResult(data.analysisResult);
+                if (data.complementarySuggestions) setComplementarySuggestions(data.complementarySuggestions);
+                if (data.consumedMeals) setConsumedMeals(new Set(data.consumedMeals));
+                if (data.extraFoods) setExtraFoods(data.extraFoods);
+                if (data.weeklyMenu) setActiveTab('mealPlan');
+            }
+        }
+    };
+    loadActiveMenu();
+  }, []);
+
+  // Save Active Menu to Firestore (Debounced or on change)
+  useEffect(() => {
+    if (weeklyMenu) {
+        const saveMenu = async () => {
+            const menuData = {
+                weeklyMenu,
+                analysisResult, // Keep analysis result so we can regenerate next week
+                complementarySuggestions,
+                consumedMeals: Array.from(consumedMeals),
+                extraFoods,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // Always save to localStorage
+            localStorage.setItem('activeMenu', JSON.stringify(menuData));
+
+            try {
+                await setDoc(doc(db, "activeMenu", "current"), menuData);
+                setCloudError(false);
+            } catch (e) {
+                console.warn("Error syncing menu to cloud:", e);
+                setCloudError(true);
+            }
+        };
+        // Simple debounce
+        const timeoutId = setTimeout(saveMenu, 1000);
+        return () => clearTimeout(timeoutId);
+    }
+  }, [weeklyMenu, consumedMeals, extraFoods, analysisResult, complementarySuggestions]);
+
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -63,9 +158,15 @@ function App() {
             const querySnapshot = await getDocs(q);
             const history = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }) as PurchaseRecord);
             setPurchaseHistory(history);
+            localStorage.setItem('purchaseHistory', JSON.stringify(history));
+            setCloudError(false);
         } catch (e) {
-            console.error("Failed to fetch purchase history from Firestore", e);
-            setError("No se pudo cargar el historial de compras.");
+            console.warn("Cloud history sync unavailable:", e);
+            setCloudError(true);
+            const savedHistory = localStorage.getItem('purchaseHistory');
+            if (savedHistory) {
+                setPurchaseHistory(JSON.parse(savedHistory));
+            }
         }
     };
     fetchHistory();
@@ -77,9 +178,15 @@ function App() {
         const querySnapshot = await getDocs(collection(db, "familyMembers"));
         const members = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }) as FamilyMember);
         setFamilyMembers(members);
+        localStorage.setItem('familyMembers', JSON.stringify(members));
+        setCloudError(false);
       } catch (e) {
-        console.error("Failed to fetch family members from Firestore", e);
-        setError("No se pudo cargar el perfil familiar.");
+        console.warn("Cloud family sync unavailable:", e);
+        setCloudError(true);
+        const savedFamily = localStorage.getItem('familyMembers');
+        if (savedFamily) {
+            setFamilyMembers(JSON.parse(savedFamily));
+        }
       }
     };
     fetchFamily();
@@ -133,11 +240,8 @@ function App() {
     setIsLoading(true);
     setLoadingMessage('Analizando tus compras...');
     setError(null);
-    setAnalysisResult(null);
-    setWeeklyMenu(null);
-    setComplementarySuggestions(null);
-    setNutritionalAssessment(null);
-
+    // Do not clear weeklyMenu here, only when explicitly regenerating or resetting
+    
     try {
       let result: AnalysisResult = { identifiedIngredients: [], recipeSuggestions: [] };
 
@@ -168,12 +272,21 @@ function App() {
             date: purchaseDate,
             ingredients: uniqueIngredients
           };
-          const docRef = await addDoc(collection(db, "purchaseHistory"), newRecordData);
-          const newRecord: PurchaseRecord = { ...newRecordData, id: docRef.id };
+          
+          let newRecord: PurchaseRecord;
+          try {
+            const docRef = await addDoc(collection(db, "purchaseHistory"), newRecordData);
+            newRecord = { ...newRecordData, id: docRef.id };
+          } catch (e) {
+            console.error("Error saving purchase to Firestore, saving locally:", e);
+            newRecord = { ...newRecordData, id: `local-${Date.now()}` };
+          }
         
           setPurchaseHistory(prev => {
             const filtered = prev.filter(p => p.date !== newRecord.date);
-            return [newRecord, ...filtered].slice(0, 10);
+            const updated = [newRecord, ...filtered].slice(0, 10);
+            localStorage.setItem('purchaseHistory', JSON.stringify(updated));
+            return updated;
           });
       }
 
@@ -185,19 +298,33 @@ function App() {
     }
   }, [imageFiles, manualIngredients, purchaseDate]);
 
-  const handleGenerateMenu = useCallback(async () => {
-    if (!analysisResult) return;
+  const handleGenerateMenu = useCallback(async (isNextWeek: boolean = false) => {
+    if (!analysisResult && !isNextWeek) return;
 
     setIsLoading(true);
-    setLoadingMessage('Creando tu menú semanal...');
+    setLoadingMessage(isNextWeek ? 'Generando plan para la siguiente semana...' : 'Creando tu menú semanal...');
     setError(null);
     setComplementarySuggestions(null);
+    
     // Reset tracking when regenerating menu
     setConsumedMeals(new Set());
     setExtraFoods({});
 
     try {
-        let ingredients = analysisResult.identifiedIngredients.map(i => i.name);
+        let ingredients: string[] = [];
+
+        if (isNextWeek && expiringItems.length > 0 && analysisResult) {
+            // Priority logic for Next Week
+            const urgentNames = expiringItems.map(e => e.name);
+            const otherIngredients = analysisResult.identifiedIngredients
+                .map(i => i.name)
+                .filter(n => !urgentNames.includes(n));
+            
+            // Put urgent items first to hint the AI
+            ingredients = [...urgentNames, ...otherIngredients];
+        } else if (analysisResult) {
+            ingredients = analysisResult.identifiedIngredients.map(i => i.name);
+        }
         
         const purchaseHistoryItems = purchaseHistory.flatMap(p => p.ingredients.map(i => i.name));
         const uniqueHistoryItems = purchaseHistoryItems.filter((item, index, self) => self.indexOf(item) === index);
@@ -209,6 +336,9 @@ function App() {
         const suggestions = await generateComplementarySuggestions(menu, familyMembers, ingredients);
         setComplementarySuggestions(suggestions);
         setActiveTab('mealPlan');
+        
+        // Scroll to top
+        window.scrollTo(0,0);
 
     } catch (err) {
         console.error(err);
@@ -216,15 +346,27 @@ function App() {
     } finally {
         setIsLoading(false);
     }
-  }, [analysisResult, purchaseHistory, familyMembers]);
+  }, [analysisResult, purchaseHistory, familyMembers, expiringItems]);
   
   const handleAddMember = async (memberData: Omit<FamilyMember, 'id' | 'dailyRequirements'>) => {
     try {
         const requirements = await calculateDailyRequirements(memberData);
         const newMemberData = { ...memberData, dailyRequirements: requirements };
-        const docRef = await addDoc(collection(db, "familyMembers"), newMemberData);
-        const newMember: FamilyMember = { ...newMemberData, id: docRef.id };
-        setFamilyMembers(prev => [...prev, newMember]);
+        
+        let newMember: FamilyMember;
+        try {
+            const docRef = await addDoc(collection(db, "familyMembers"), newMemberData);
+            newMember = { ...newMemberData, id: docRef.id };
+        } catch (e) {
+            console.error("Error adding family member to Firestore, saving locally:", e);
+            newMember = { ...newMemberData, id: `local-${Date.now()}` };
+        }
+        
+        setFamilyMembers(prev => {
+            const updated = [...prev, newMember];
+            localStorage.setItem('familyMembers', JSON.stringify(updated));
+            return updated;
+        });
     } catch (e) {
         console.error("Error adding family member:", e);
         setError("No se pudo añadir el miembro de la familia. Inténtalo de nuevo.");
@@ -232,10 +374,44 @@ function App() {
     }
   };
 
+  const handleUpdateMember = async (id: string, memberData: Omit<FamilyMember, 'id' | 'dailyRequirements'>) => {
+    try {
+        // Recalculate requirements based on new data (age, goal, etc might have changed)
+        const requirements = await calculateDailyRequirements(memberData);
+        const updatedMemberData = { ...memberData, dailyRequirements: requirements };
+        
+        try {
+            const memberRef = doc(db, "familyMembers", id);
+            await updateDoc(memberRef, updatedMemberData);
+        } catch (e) {
+            console.error("Error updating family member in Firestore, updating locally:", e);
+        }
+
+        setFamilyMembers(prev => {
+            const updated = prev.map(m => m.id === id ? { ...updatedMemberData, id } : m);
+            localStorage.setItem('familyMembers', JSON.stringify(updated));
+            return updated;
+        });
+    } catch (e) {
+        console.error("Error updating family member:", e);
+        setError("No se pudo actualizar el miembro de la familia.");
+        throw e;
+    }
+  };
+
   const handleRemoveMember = async (id: string) => {
     try {
-        await deleteDoc(doc(db, "familyMembers", id));
-        setFamilyMembers(prev => prev.filter(member => member.id !== id));
+        try {
+            await deleteDoc(doc(db, "familyMembers", id));
+        } catch (e) {
+            console.error("Error removing family member from Firestore, removing locally:", e);
+        }
+        
+        setFamilyMembers(prev => {
+            const updated = prev.filter(member => member.id !== id);
+            localStorage.setItem('familyMembers', JSON.stringify(updated));
+            return updated;
+        });
     } catch (e) {
         console.error("Error removing family member:", e);
         setError("No se pudo eliminar el miembro de la familia. Inténtalo de nuevo.");
@@ -269,19 +445,95 @@ function App() {
     }
   }, [weeklyMenu]);
 
+  const handleSearchSingleImage = useCallback(async (dayKey: keyof WeeklyMealPlan, mealKey: keyof Omit<DailyMeal, 'waterIntakeLiters'>) => {
+    if (!weeklyMenu) return;
 
-  const handleReset = () => {
-      setImageFiles([]);
-      setManualIngredients([]);
-      setAnalysisResult(null);
-      setWeeklyMenu(null);
-      setComplementarySuggestions(null);
-      setNutritionalAssessment(null);
-      setError(null);
-      setIsLoading(false);
-      setActiveTab('foods');
-      setConsumedMeals(new Set());
-      setExtraFoods({});
+    const mealToUpdate = weeklyMenu[dayKey][mealKey];
+    if (!mealToUpdate || typeof mealToUpdate === 'number') return;
+    
+    const newMenu = JSON.parse(JSON.stringify(weeklyMenu));
+    newMenu[dayKey][mealKey].isImageLoading = true;
+    setWeeklyMenu(newMenu);
+    
+    try {
+        // Use Google Search to find a real image URL
+        const imageUrl = await findMealImage(mealToUpdate.name);
+        
+        const finalMenu = JSON.parse(JSON.stringify(newMenu));
+        finalMenu[dayKey][mealKey].isImageLoading = false;
+        
+        if (imageUrl) {
+            finalMenu[dayKey][mealKey].imageUrl = imageUrl;
+        } else {
+            // Fallback: If no real image found, maybe trigger a toast or just stop loading
+            console.log("No image found via search");
+        }
+        setWeeklyMenu(finalMenu);
+    } catch (err) {
+        console.error("Error searching single image:", err);
+        const finalMenu = JSON.parse(JSON.stringify(newMenu));
+        finalMenu[dayKey][mealKey].isImageLoading = false;
+        setWeeklyMenu(finalMenu);
+    }
+  }, [weeklyMenu]);
+
+
+  const handleClearPlan = async () => {
+      if (window.confirm("¿Estás seguro de que quieres borrar el plan actual? Esto no se puede deshacer.")) {
+        setImageFiles([]);
+        setManualIngredients([]);
+        setAnalysisResult(null);
+        setWeeklyMenu(null);
+        setComplementarySuggestions(null);
+        setNutritionalAssessment(null);
+        setError(null);
+        setIsLoading(false);
+        setActiveTab('foods');
+        setConsumedMeals(new Set());
+        setExtraFoods({});
+        
+        // Clear from localStorage
+        localStorage.removeItem('activeMenu');
+
+        // Clear from Firestore
+        try {
+            await deleteDoc(doc(db, "activeMenu", "current"));
+        } catch(e) {
+            console.error("Error clearing menu from db", e);
+        }
+      }
+  };
+
+  const handleResetInventory = () => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar el inventario actual y escanear de nuevo?")) {
+        setAnalysisResult(null);
+        setNutritionalAssessment(null);
+        setImageFiles([]);
+        setManualIngredients([]);
+        setError(null);
+        window.scrollTo(0,0);
+    }
+  };
+
+  const handleDeleteHistory = async (recordId: string) => {
+    if (window.confirm("¿Eliminar este registro del historial?")) {
+        try {
+            try {
+                await deleteDoc(doc(db, "purchaseHistory", recordId));
+            } catch (e) {
+                console.error("Error deleting history from Firestore, deleting locally:", e);
+            }
+            
+            setPurchaseHistory(prev => {
+                const updated = prev.filter(p => p.id !== recordId);
+                localStorage.setItem('purchaseHistory', JSON.stringify(updated));
+                return updated;
+            });
+        } catch (e) {
+            console.error("Error deleting history:", e);
+            setError("No se pudo eliminar el registro del historial.");
+        }
+    }
   };
 
   const handleReusePurchase = useCallback((record: PurchaseRecord) => {
@@ -290,8 +542,7 @@ function App() {
       recipeSuggestions: [], 
     };
     setAnalysisResult(reusedResult);
-    setWeeklyMenu(null); 
-    setComplementarySuggestions(null);
+    // Do not clear weekly menu immediately, let user decide to generate
     setNutritionalAssessment(null); 
     setImageFiles([]); 
     setManualIngredients([]); 
@@ -360,7 +611,17 @@ function App() {
   
   return (
     <div className="min-h-screen font-sans flex flex-col bg-slate-50/50">
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header activeTab={activeTab} onTabChange={setActiveTab} familyName={familyName} onFamilyNameChange={handleFamilyNameChange} />
+      
+      {cloudError && (
+          <div className="bg-amber-50 border-b border-amber-100 px-4 py-1 text-center">
+              <p className="text-[10px] text-amber-600 font-medium flex items-center justify-center">
+                  <span className="mr-1.5">☁️</span> 
+                  Modo Local: Sincronización en la nube no disponible. Tus datos se guardan en este navegador.
+              </p>
+          </div>
+      )}
+
       <main className="flex-grow pt-24 pb-28 md:pb-10">
           <div className="container mx-auto px-4 lg:px-8 max-w-7xl">
               {error && (
@@ -432,7 +693,13 @@ function App() {
                                 
                                 {/* RIGHT COLUMN: HISTORY */}
                                 <div className="lg:col-span-5">
-                                    {purchaseHistory.length > 0 && <PurchaseHistoryDisplay history={purchaseHistory} onReuse={handleReusePurchase} />}
+                                    {purchaseHistory.length > 0 && (
+                                        <PurchaseHistoryDisplay 
+                                            history={purchaseHistory} 
+                                            onReuse={handleReusePurchase} 
+                                            onDelete={handleDeleteHistory}
+                                        />
+                                    )}
                                 </div>
                             </div>
                           ) : (
@@ -444,12 +711,19 @@ function App() {
                                         <h2 className="text-xl font-bold mb-2">Todo listo!</h2>
                                         <p className="text-green-100 text-sm mb-6">Hemos analizado tus productos. Ahora puedes generar un plan personalizado.</p>
                                         <button
-                                            onClick={handleGenerateMenu}
+                                            onClick={() => handleGenerateMenu(false)}
                                             disabled={isLoading}
                                             className="w-full py-3 bg-white text-green-900 font-bold rounded-xl hover:bg-green-50 transition-colors shadow-md flex items-center justify-center gap-2"
                                         >
                                             <CalendarIcon />
                                             <span>Crear Menú Semanal</span>
+                                        </button>
+                                        <button
+                                            onClick={handleResetInventory}
+                                            className="w-full mt-3 py-2 border border-green-700 text-green-200 text-sm font-semibold rounded-xl hover:bg-green-800 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <TrashIcon />
+                                            <span>Eliminar Inventario</span>
                                         </button>
                                     </div>
                                     <ShoppingList 
@@ -484,29 +758,24 @@ function App() {
                   
                   {activeTab === 'mealPlan' && (
                        <div className="animate-fade-in max-w-6xl mx-auto">
-                          {!analysisResult ? (
+                          {!weeklyMenu ? (
                               <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                                   <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-6">
                                       <CalendarIcon className="w-10 h-10" />
                                   </div>
-                                  <h2 className="text-2xl font-bold text-gray-700 mb-2">Aún no hay un plan</h2>
-                                  <p className="text-gray-500 max-w-md">Por favor, ve a la pestaña "Alimentos" para añadir productos y analizarlos primero.</p>
+                                  <h2 className="text-2xl font-bold text-gray-700 mb-2">Aún no hay un plan activo</h2>
+                                  <p className="text-gray-500 max-w-md">Por favor, ve a la pestaña "Alimentos" para añadir productos y generar tu primer menú.</p>
                                   <button onClick={() => setActiveTab('foods')} className="mt-6 px-6 py-2 bg-green-600 text-white rounded-full font-medium hover:bg-green-700 transition-colors">
                                       Ir a Alimentos
                                   </button>
                               </div>
-                          ) : !weeklyMenu ? (
-                               <div className="text-center mt-20">
-                                   <div className="w-16 h-16 border-4 border-t-4 border-t-green-600 border-gray-200 rounded-full animate-spin mx-auto mb-4"></div>
-                                   <p className="text-xl font-semibold text-gray-700">Generando tu plan semanal...</p>
-                                   <p className="text-gray-500">Esto puede tomar unos segundos.</p>
-                               </div>
                           ) : (
                               <>
                                   <WeeklyMenuDisplay 
                                     menu={weeklyMenu} 
                                     family={familyMembers} 
                                     onGenerateImage={handleGenerateSingleImage} 
+                                    onSearchImage={handleSearchSingleImage}
                                     consumedMeals={consumedMeals}
                                     onToggleMeal={handleToggleMealConsumption}
                                     extraFoods={extraFoods}
@@ -514,8 +783,34 @@ function App() {
                                     onRemoveExtra={handleRemoveExtraFood}
                                   />
                                   {complementarySuggestions && complementarySuggestions.length > 0 && (
-                                      <ComplementarySuggestionsDisplay suggestions={complementarySuggestions} />
+                                      <ComplementarySuggestionsDisplay 
+                                        suggestions={complementarySuggestions} 
+                                        onAddToList={handleAddToList}
+                                        shoppingList={shoppingList}
+                                      />
                                   )}
+
+                                  {/* Menu Actions */}
+                                  <div className="mt-10 flex flex-col sm:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100 gap-4">
+                                        <div className="text-left">
+                                            <h3 className="font-bold text-gray-800">¿Terminaste esta semana?</h3>
+                                            <p className="text-sm text-gray-500">Genera el plan de la siguiente semana priorizando lo que está por vencer.</p>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <button 
+                                                onClick={handleClearPlan}
+                                                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium text-sm flex items-center gap-2"
+                                            >
+                                                <TrashIcon /> Borrar Plan Actual
+                                            </button>
+                                            <button 
+                                                onClick={() => handleGenerateMenu(true)}
+                                                className="px-6 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-bold shadow-md shadow-green-200"
+                                            >
+                                                Generar Siguiente Semana →
+                                            </button>
+                                        </div>
+                                  </div>
                               </>
                           )}
                        </div>
@@ -527,6 +822,7 @@ function App() {
                             family={familyMembers} 
                             onAddMember={handleAddMember} 
                             onRemoveMember={handleRemoveMember} 
+                            onUpdateMember={handleUpdateMember}
                           />
                       </div>
                   )}
@@ -541,21 +837,6 @@ function App() {
                       </div>
                   )}
               </div>
-
-              {(analysisResult || imageFiles.length > 0 || manualIngredients.length > 0) && !isLoading && activeTab === 'foods' && (
-                   <div className="mt-12 text-center pb-8 lg:hidden">
-                      <button onClick={handleReset} className="text-gray-400 hover:text-gray-800 font-medium text-sm underline">
-                          Empezar análisis nuevo
-                      </button>
-                   </div>
-              )}
-              {(analysisResult || imageFiles.length > 0 || manualIngredients.length > 0) && !isLoading && activeTab === 'foods' && (
-                   <div className="fixed bottom-8 right-8 hidden lg:block">
-                      <button onClick={handleReset} className="bg-white text-gray-600 hover:text-red-600 font-medium text-sm px-4 py-2 rounded-full shadow-lg border border-gray-200 hover:bg-red-50 transition-colors">
-                          Empezar de nuevo
-                      </button>
-                   </div>
-              )}
           </div>
       </main>
       <BottomNavBar activeTab={activeTab} onTabChange={setActiveTab} />

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { HomeIcon, CalendarIcon, UsersIcon, LightBulbIcon } from './IconComponents';
-import { Tab } from '../App';
+import { Tab } from '../types';
 
 interface BottomNavBarProps {
     activeTab: Tab;
@@ -18,16 +18,17 @@ const NavButton: React.FC<{
     return (
         <button
             onClick={onClick}
-            className="relative flex flex-col items-center justify-center w-full h-full group"
+            className={`relative flex flex-col items-center justify-center w-full h-full group transition-colors duration-300 ${isActive ? 'text-[#1E4620]' : 'text-slate-400 hover:text-slate-600'}`}
             aria-label={label}
         >
-            <div className={`absolute -top-1 w-8 h-1 rounded-b-full transition-all duration-300 ${isActive ? 'bg-green-600' : 'bg-transparent'}`}></div>
-            
-            <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-green-50 text-green-700 translate-y-[-2px]' : 'text-slate-400 hover:text-slate-600'}`}>
+            {isActive && (
+                <span className="absolute -top-3 w-12 h-1 bg-[#1E4620] rounded-b-lg shadow-sm animate-fade-in"></span>
+            )}
+            <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-green-50 scale-110' : ''}`}>
                  <Icon className="h-6 w-6" />
             </div>
             
-            <span className={`text-[10px] font-medium mt-1 transition-colors duration-300 ${isActive ? 'text-green-700' : 'text-slate-400'}`}>
+            <span className="text-[10px] font-medium mt-1">
                 {label}
             </span>
         </button>
@@ -43,19 +44,17 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onTabChange }) =
     ];
 
     return (
-        <nav className="md:hidden fixed bottom-6 left-4 right-4 mx-auto max-w-lg h-20 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/50 z-50">
-            <div className="flex justify-around items-center h-full px-2">
-                {navItems.map(item => (
-                    <NavButton
-                        key={item.tab}
-                        tabName={item.tab as Tab}
-                        label={item.label}
-                        Icon={item.Icon}
-                        isActive={activeTab === item.tab}
-                        onClick={() => onTabChange(item.tab as Tab)}
-                    />
-                ))}
-            </div>
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 flex items-center justify-around pb-2 border-t border-slate-100">
+             {navItems.map(item => (
+                <NavButton
+                    key={item.tab}
+                    tabName={item.tab as Tab}
+                    label={item.label}
+                    Icon={item.Icon}
+                    isActive={activeTab === item.tab}
+                    onClick={() => onTabChange(item.tab as Tab)}
+                />
+            ))}
         </nav>
     );
 };

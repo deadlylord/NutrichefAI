@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { AnalysisResult, Ingredient } from '../types';
-import { ClockIcon, BookOpenIcon, SparklesIcon } from './IconComponents';
+import { ClockIcon, BookOpenIcon, SparklesIcon, YouTubeIcon } from './IconComponents';
 
 interface AnalysisDisplayProps {
   result: AnalysisResult | null;
@@ -16,6 +17,10 @@ export const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result }) => {
     acc[category].push(item);
     return acc;
   }, {} as Record<string, Ingredient[]>);
+
+  const openYouTube = (query: string) => {
+    window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+  };
 
   return (
     <div className="space-y-6">
@@ -67,17 +72,30 @@ export const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result }) => {
                   ))}
               </div>
 
-              <details className="mt-4 group">
-                <summary className="cursor-pointer text-sm font-semibold text-green-700 hover:text-green-800 flex items-center w-fit px-3 py-1.5 bg-green-50 rounded-lg transition-colors">
-                    <span>Ver paso a paso</span>
-                    <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                </summary>
-                <div className="mt-3 text-slate-700 text-sm leading-relaxed bg-white p-4 rounded-xl border border-slate-100 whitespace-pre-wrap shadow-sm">
-                    {recipe.instructions}
-                </div>
-              </details>
+              <div className="mt-4 flex gap-3">
+                  <details className="group flex-grow">
+                    <summary className="cursor-pointer text-sm font-semibold text-green-700 hover:text-green-800 flex items-center w-fit px-3 py-1.5 bg-green-50 rounded-lg transition-colors">
+                        <span>Ver paso a paso</span>
+                        <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </summary>
+                    <div className="mt-3 text-slate-700 text-sm leading-relaxed bg-white p-4 rounded-xl border border-slate-100 whitespace-pre-wrap shadow-sm">
+                        {recipe.instructions}
+                    </div>
+                  </details>
+
+                  {recipe.youtubeQuery && (
+                      <button 
+                        onClick={() => openYouTube(recipe.youtubeQuery || recipe.title)}
+                        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-bold transition-colors"
+                        title="Ver video en YouTube"
+                      >
+                          <YouTubeIcon />
+                          <span className="hidden sm:inline">Ver Video</span>
+                      </button>
+                  )}
+              </div>
             </div>
           ))}
         </div>
