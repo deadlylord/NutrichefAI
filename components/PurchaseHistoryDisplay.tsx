@@ -11,43 +11,45 @@ interface PurchaseHistoryDisplayProps {
 
 const PurchaseHistoryDisplay: React.FC<PurchaseHistoryDisplayProps> = ({ history, onReuse, onDelete }) => {
     return (
-        <div className="bg-white p-6 rounded-3xl shadow-md">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Historial de Compras</h2>
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+        <div className="card-base p-5">
+            <h2 className="text-sm font-black mb-4 text-ink uppercase tracking-widest flex items-center italic">
+                <span className="mr-2">🕒</span> Historial
+            </h2>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                 {history.map(record => (
-                    <details key={record.id} className="border border-gray-100 rounded-xl p-3 hover:border-green-300 transition-colors group">
-                        <summary className="font-semibold cursor-pointer text-gray-700 flex justify-between items-center">
-                            <span>{new Date(record.date).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</span>
-                            <div className="flex items-center gap-2">
+                    <div key={record.id} className="border border-border rounded-2xl p-3 bg-paper hover:bg-white hover:shadow-card transition-all group">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="label-small">
+                                {new Date(record.date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                            </span>
+                            <div className="flex items-center gap-1">
                                 <button
-                                    onClick={(e) => {
-                                        e.preventDefault(); 
-                                        onReuse(record);
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1.5 text-xs bg-green-100 text-green-800 font-semibold px-2.5 py-1 rounded-full hover:bg-green-200"
-                                    title="Reutilizar esta compra para un nuevo menú"
+                                    onClick={() => onReuse(record)}
+                                    className="p-1.5 text-green hover:bg-green-light rounded-lg transition-colors"
+                                    title="Reutilizar"
                                 >
-                                    <RefreshIcon />
-                                    <span className="hidden sm:inline">Usar</span>
+                                    <RefreshIcon className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={(e) => {
-                                        e.preventDefault(); 
-                                        onDelete(record.id);
-                                    }}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500 p-1 rounded-full"
-                                    title="Eliminar del historial"
+                                    onClick={() => onDelete(record.id)}
+                                    className="p-1.5 text-muted hover:text-red rounded-lg transition-colors"
+                                    title="Eliminar"
                                 >
-                                    <TrashIcon />
+                                    <TrashIcon className="w-4 h-4" />
                                 </button>
                             </div>
-                        </summary>
-                        <ul className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                            {record.ingredients.map(ing => (
-                                <li key={ing.name} className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-md capitalize">{ing.name}</li>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                            {record.ingredients.slice(0, 4).map(ing => (
+                                <span key={ing.name} className="bg-warm text-[9px] font-bold text-muted px-2 py-0.5 rounded-full capitalize">
+                                    {ing.name}
+                                </span>
                             ))}
-                        </ul>
-                    </details>
+                            {record.ingredients.length > 4 && (
+                                <span className="text-[9px] text-muted px-1">+{record.ingredients.length - 4}</span>
+                            )}
+                        </div>
+                    </div>
                 ))}
             </div>
         </div>

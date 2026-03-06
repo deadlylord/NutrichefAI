@@ -88,34 +88,34 @@ const FamilyManager: React.FC<FamilyManagerProps> = ({ family, onAddMember, onRe
     };
 
     return (
-        <div className="space-y-8">
-            <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-50">
-                <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center">
-                    {editingId ? <PencilIcon /> : <UserPlusIcon />} 
-                    <span className="ml-2">{editingId ? 'Editar Miembro' : 'Añadir Miembro'}</span>
+        <div className="space-y-8 animate-slide-up">
+            <div className="card-base p-6 md:p-8">
+                <h2 className="text-2xl font-black mb-8 text-ink flex items-center italic">
+                    {editingId ? <PencilIcon className="w-6 h-6 mr-2" /> : <UserPlusIcon className="w-6 h-6 mr-2" />} 
+                    <span>{editingId ? 'Editar Miembro' : 'Añadir Miembro'}</span>
                 </h2>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Nombre</label>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="label-small ml-1">Nombre Completo</label>
                             <input 
                                 type="text" 
                                 value={name} 
                                 onChange={e => setName(e.target.value)} 
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-green-500 bg-slate-50" 
+                                className="w-full px-4 py-3 rounded-2xl border border-border focus:border-green focus:ring-1 focus:ring-green/20 bg-paper text-ink font-bold placeholder:text-muted/50 transition-all" 
                                 placeholder="Ej. Juan Pérez"
                                 required 
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Edad</label>
+                        <div className="space-y-2">
+                            <label className="label-small ml-1">Edad (Años)</label>
                             <input 
                                 type="number" 
                                 value={age} 
                                 placeholder="0 para bebés" 
                                 onChange={e => setAge(e.target.value === '' ? '' : parseInt(e.target.value))} 
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-green-500 bg-slate-50" 
+                                className="w-full px-4 py-3 rounded-2xl border border-border focus:border-green focus:ring-1 focus:ring-green/20 bg-paper text-ink font-bold placeholder:text-muted/50 transition-all" 
                                 required 
                                 min="0" 
                             />
@@ -123,18 +123,18 @@ const FamilyManager: React.FC<FamilyManagerProps> = ({ family, onAddMember, onRe
                     </div>
 
                     {/* Gender Buttons */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Género</label>
+                    <div className="space-y-3">
+                        <label className="label-small ml-1">Género</label>
                         <div className="flex flex-wrap gap-2">
                             {GENDER_OPTIONS.map(opt => (
                                 <button
                                     key={opt.value}
                                     type="button"
                                     onClick={() => setGender(opt.value as any)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                    className={`px-5 py-2 rounded-full text-[11px] font-black transition-all uppercase tracking-wider ${
                                         gender === opt.value 
-                                        ? 'bg-green-600 text-white shadow-md shadow-green-200' 
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        ? 'bg-green text-paper shadow-md' 
+                                        : 'bg-warm text-muted hover:bg-border/50'
                                     }`}
                                 >
                                     {opt.label}
@@ -144,18 +144,18 @@ const FamilyManager: React.FC<FamilyManagerProps> = ({ family, onAddMember, onRe
                     </div>
 
                     {/* Activity Buttons */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Nivel de Actividad</label>
+                    <div className="space-y-3">
+                        <label className="label-small ml-1">Nivel de Actividad</label>
                         <div className="flex flex-wrap gap-2">
                             {ACTIVITY_OPTIONS.map(opt => (
                                 <button
                                     key={opt.value}
                                     type="button"
                                     onClick={() => setActivityLevel(opt.value as any)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                    className={`px-5 py-2 rounded-full text-[11px] font-black transition-all uppercase tracking-wider ${
                                         activityLevel === opt.value 
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        ? 'bg-blue text-paper shadow-md' 
+                                        : 'bg-warm text-muted hover:bg-border/50'
                                     }`}
                                 >
                                     {opt.label}
@@ -165,18 +165,18 @@ const FamilyManager: React.FC<FamilyManagerProps> = ({ family, onAddMember, onRe
                     </div>
 
                     {/* Goal Buttons */}
-                    <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Objetivo Nutricional</label>
+                    <div className="space-y-3">
+                        <label className="label-small ml-1">Objetivo Nutricional</label>
                         <div className="flex flex-wrap gap-2">
                             {GOAL_OPTIONS.map(opt => (
                                 <button
                                     key={opt.value}
                                     type="button"
                                     onClick={() => setGoal(opt.value as any)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                    className={`px-5 py-2 rounded-full text-[11px] font-black transition-all uppercase tracking-wider ${
                                         goal === opt.value 
-                                        ? 'bg-purple-600 text-white shadow-md shadow-purple-200' 
-                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                        ? 'bg-purple text-paper shadow-md' 
+                                        : 'bg-warm text-muted hover:bg-border/50'
                                     }`}
                                 >
                                     {opt.label}
@@ -185,12 +185,12 @@ const FamilyManager: React.FC<FamilyManagerProps> = ({ family, onAddMember, onRe
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border">
                         {editingId && (
                             <button 
                                 type="button" 
                                 onClick={resetForm}
-                                className="px-5 py-2.5 rounded-full text-slate-600 font-bold hover:bg-slate-100 transition-colors"
+                                className="px-6 py-3 rounded-2xl text-muted font-black hover:bg-warm transition-colors uppercase tracking-widest text-[10px]"
                             >
                                 Cancelar
                             </button>
@@ -198,50 +198,62 @@ const FamilyManager: React.FC<FamilyManagerProps> = ({ family, onAddMember, onRe
                         <button 
                             type="submit" 
                             disabled={isLoading} 
-                            className="px-8 py-2.5 rounded-full bg-slate-800 text-white font-bold hover:bg-slate-900 disabled:bg-slate-400 transition-all shadow-lg"
+                            className="btn-primary px-10 py-3 disabled:opacity-50"
                         >
                             {isLoading ? 'Procesando...' : (editingId ? 'Guardar Cambios' : 'Añadir Miembro')}
                         </button>
                     </div>
                 </form>
-                {error && <p className="text-red-500 text-sm mt-4 bg-red-50 p-3 rounded-xl">{error}</p>}
+                {error && <p className="text-red text-xs mt-4 bg-red-light p-4 rounded-2xl font-bold italic">{error}</p>}
             </div>
 
             {family.length > 0 && (
-                <div className="bg-white p-6 rounded-3xl shadow-md border border-slate-50">
-                    <h2 className="text-2xl font-bold mb-6 text-gray-800">Tu Familia</h2>
+                <div className="card-base p-6 md:p-8">
+                    <h2 className="text-2xl font-black mb-8 text-ink italic">Tu Familia</h2>
                     <div className="grid grid-cols-1 gap-4">
                         {family.map(member => (
-                            <div key={member.id} className="border border-slate-100 bg-slate-50/50 rounded-2xl p-5 flex items-center justify-between group hover:border-green-200 hover:bg-green-50/30 transition-all">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-bold text-lg text-slate-800">{member.name}</p>
-                                        <span className="text-xs bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">{member.age} años</span>
-                                        <span className="text-[10px] uppercase tracking-wider bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                            <div key={member.id} className="border border-border bg-paper rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-green-mid/30 hover:bg-white transition-all">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <p className="font-black text-xl text-ink italic">{member.name}</p>
+                                        <span className="badge bg-warm text-muted">{member.age} años</span>
+                                        <span className="badge bg-green-light text-green">
                                             {GOAL_OPTIONS.find(g => g.value === member.goal)?.label}
                                         </span>
                                     </div>
-                                    <div className="text-sm text-slate-600 mt-2 flex flex-wrap gap-3">
-                                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-800"></span> <strong>{member.dailyRequirements.calories.toFixed(0)}</strong> kcal</span>
-                                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> <strong>{member.dailyRequirements.protein.toFixed(0)}g</strong> Prot</span>
-                                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> <strong>{member.dailyRequirements.carbs.toFixed(0)}g</strong> Carb</span>
-                                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500"></span> <strong>{member.dailyRequirements.fat.toFixed(0)}g</strong> Grasa</span>
+                                    <div className="flex flex-wrap gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-ink"></div>
+                                            <span className="text-sm font-black text-ink">{member.dailyRequirements.calories.toFixed(0)} <span className="label-small text-[8px]">kcal</span></span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-red"></div>
+                                            <span className="text-sm font-black text-ink">{member.dailyRequirements.protein.toFixed(0)}g <span className="label-small text-[8px]">Prot</span></span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-green"></div>
+                                            <span className="text-sm font-black text-ink">{member.dailyRequirements.carbs.toFixed(0)}g <span className="label-small text-[8px]">Carb</span></span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-blue"></div>
+                                            <span className="text-sm font-black text-ink">{member.dailyRequirements.fat.toFixed(0)}g <span className="label-small text-[8px]">Grasa</span></span>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <button 
                                         onClick={() => handleEditClick(member)}
-                                        className="p-2.5 rounded-xl bg-white text-slate-400 border border-slate-200 hover:text-blue-600 hover:border-blue-300 hover:shadow-sm transition-all"
+                                        className="p-3 rounded-2xl bg-warm text-muted hover:text-blue hover:bg-blue-light transition-all"
                                         title="Editar miembro"
                                     >
-                                        <PencilIcon />
+                                        <PencilIcon className="w-5 h-5" />
                                     </button>
                                     <button 
                                         onClick={() => onRemoveMember(member.id)} 
-                                        className="p-2.5 rounded-xl bg-white text-slate-400 border border-slate-200 hover:text-red-500 hover:border-red-300 hover:shadow-sm transition-all"
+                                        className="p-3 rounded-2xl bg-warm text-muted hover:text-red hover:bg-red-light transition-all"
                                         title="Eliminar miembro"
                                     >
-                                        <TrashIcon />
+                                        <TrashIcon className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>

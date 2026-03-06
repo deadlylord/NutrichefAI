@@ -23,26 +23,26 @@ export const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] animate-fade-in border border-slate-50">
-        <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-            <h2 className="text-xl font-bold text-slate-800 flex items-center">
-            <SparklesIcon /> <span className="ml-2">Tu Inventario</span>
+    <div className="space-y-4">
+      <div className="card-base p-5 md:p-6 animate-slide-up">
+        <div className="flex items-center justify-between mb-5 border-b border-border pb-3">
+            <h2 className="text-lg font-black text-ink flex items-center italic">
+            <SparklesIcon /> <span className="ml-2">Inventario</span>
             </h2>
-            <span className="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">
+            <span className="badge bg-green-light text-green">
                 {result.identifiedIngredients.length} productos
             </span>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
             {Object.entries(groupedIngredients).map(([category, items]) => (
                 <div key={category}>
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">{category}</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <h3 className="label-small mb-2 ml-1">{category}</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                         {(items as Ingredient[]).map((item, index) => (
-                            <div key={index} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-green-200 hover:bg-green-50/50 transition-colors group">
-                                <span className="font-medium text-slate-700 capitalize text-sm truncate mr-2">{item.name}</span>
-                                <div className="flex-shrink-0 flex items-center text-[10px] text-slate-500 bg-white px-2 py-1 rounded-md shadow-sm group-hover:text-green-700">
+                            <div key={index} className="flex flex-col p-2.5 rounded-xl bg-warm border border-transparent hover:border-green-mid hover:bg-white transition-all group">
+                                <span className="font-bold text-ink capitalize text-[11px] truncate mb-1">{item.name}</span>
+                                <div className="flex items-center text-[9px] text-muted">
                                     <ClockIcon />
                                     <span className="ml-1 whitespace-nowrap">{item.spoilageTime}</span>
                                 </div>
@@ -54,33 +54,36 @@ export const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result }) => {
         </div>
       </div>
 
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] animate-fade-in border border-slate-50" style={{animationDelay: '150ms'}}>
-        <h2 className="text-xl font-bold mb-6 text-slate-800 flex items-center border-b border-slate-100 pb-4">
-            <BookOpenIcon /> <span className="ml-2">Ideas para Cocinar</span>
+      <div className="card-base p-5 md:p-6 animate-slide-up" style={{animationDelay: '150ms'}}>
+        <h2 className="text-lg font-black mb-5 text-ink flex items-center border-b border-border pb-3 italic">
+            <BookOpenIcon /> <span className="ml-2">Ideas de Recetas</span>
         </h2>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {result.recipeSuggestions.map((recipe, index) => (
-            <div key={index} className="border border-slate-100 rounded-2xl p-5 hover:shadow-md transition-shadow bg-slate-50/30 flex flex-col">
-              <h3 className="text-lg font-bold text-slate-800">{recipe.title}</h3>
-              <p className="text-slate-600 mt-2 text-sm leading-relaxed flex-grow">{recipe.description}</p>
+            <div key={index} className="border border-border rounded-2xl p-4 bg-paper flex flex-col hover:bg-white hover:shadow-card transition-all group">
+              <h3 className="text-sm font-black text-ink">{recipe.title}</h3>
+              <p className="text-muted mt-1 text-[11px] leading-relaxed flex-grow line-clamp-2 group-hover:line-clamp-none">{recipe.description}</p>
               
-              <div className="mt-4 flex flex-wrap gap-2">
-                  {recipe.ingredientsUsed.map((ing, i) => (
-                    <span key={i} className="bg-white border border-slate-200 text-slate-600 text-[10px] font-medium px-2 py-0.5 rounded-full shadow-sm">
+              <div className="mt-3 flex flex-wrap gap-1">
+                  {recipe.ingredientsUsed.slice(0, 3).map((ing, i) => (
+                    <span key={i} className="bg-warm text-muted text-[9px] font-bold px-2 py-0.5 rounded-full">
                       {ing}
                     </span>
                   ))}
+                  {recipe.ingredientsUsed.length > 3 && (
+                    <span className="text-[9px] text-muted px-1">+{recipe.ingredientsUsed.length - 3}</span>
+                  )}
               </div>
 
-              <div className="mt-4 flex gap-3">
+              <div className="mt-3 flex gap-2">
                   <details className="group flex-grow">
-                    <summary className="cursor-pointer text-sm font-semibold text-green-700 hover:text-green-800 flex items-center w-fit px-3 py-1.5 bg-green-50 rounded-lg transition-colors">
-                        <span>Ver paso a paso</span>
-                        <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <summary className="cursor-pointer text-[11px] font-black text-green hover:opacity-80 flex items-center w-fit px-2.5 py-1 bg-green-light rounded-lg transition-colors uppercase tracking-wider">
+                        <span>Pasos</span>
+                        <svg className="w-3 h-3 ml-1 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </summary>
-                    <div className="mt-3 text-slate-700 text-sm leading-relaxed bg-white p-4 rounded-xl border border-slate-100 whitespace-pre-wrap shadow-sm">
+                    <div className="mt-2 text-ink text-[11px] leading-relaxed bg-white p-3 rounded-xl border border-border whitespace-pre-wrap shadow-sm">
                         {recipe.instructions}
                     </div>
                   </details>
@@ -88,11 +91,10 @@ export const AnalysisDisplay: React.FC<AnalysisDisplayProps> = ({ result }) => {
                   {recipe.youtubeQuery && (
                       <button 
                         onClick={() => openYouTube(recipe.youtubeQuery || recipe.title)}
-                        className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-bold transition-colors"
-                        title="Ver video en YouTube"
+                        className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 bg-red-light text-red hover:opacity-80 rounded-lg text-[11px] font-black transition-colors uppercase tracking-wider"
                       >
                           <YouTubeIcon />
-                          <span className="hidden sm:inline">Ver Video</span>
+                          <span>Video</span>
                       </button>
                   )}
               </div>

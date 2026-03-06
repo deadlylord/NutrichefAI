@@ -17,26 +17,28 @@ const SpoilageAlerts: React.FC<SpoilageAlertsProps> = ({ items }) => {
     }
 
     const getDaysLeftText = (days: number) => {
-        if (days === 0) return <span className="font-bold text-red-600">¡Vence hoy!</span>;
-        if (days === 1) return <span className="font-bold text-orange-600">Vence mañana</span>;
+        if (days === 0) return <span className="font-black text-red italic">¡Vence hoy!</span>;
+        if (days === 1) return <span className="font-black text-orange italic">Vence mañana</span>;
         return `Vence en ${days} días`;
     };
 
     return (
-        <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-3xl shadow-md animate-fade-in">
-            <div className="flex items-start">
-                <div className="text-amber-500 mt-0.5">
+        <div className="bg-orange-light border border-orange/20 text-ink p-6 rounded-[2rem] shadow-sm animate-slide-up">
+            <div className="flex items-start gap-4">
+                <div className="text-orange bg-white p-2 rounded-xl shadow-sm">
                     <AlertIcon />
                 </div>
-                <div className="ml-3">
-                    <h3 className="font-bold text-lg">Frutas y Verduras por Vencer</h3>
-                    <p className="mt-1 text-sm text-amber-800">
-                        Prioriza el uso de estas frutas y verduras para evitar el desperdicio. Las fechas son estimadas.
+                <div className="flex-1">
+                    <h3 className="font-black text-lg italic text-ink">Frutas y Verduras por <span className="text-orange">Vencer</span></h3>
+                    <p className="mt-1 text-[11px] text-muted font-bold leading-relaxed">
+                        Prioriza el uso de estos alimentos para evitar el desperdicio. Las fechas son estimadas por IA.
                     </p>
-                    <ul className="mt-3 list-disc list-inside space-y-1 text-amber-800">
+                    <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {items.map((item, index) => (
-                            <li key={index} className="capitalize">
-                                {item.name}: {getDaysLeftText(item.daysLeft)}
+                            <li key={index} className="flex items-center gap-2 bg-white/50 p-2 rounded-xl border border-orange/10 text-[11px] font-bold text-ink capitalize">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange"></span>
+                                <span className="flex-1">{item.name}</span>
+                                <span className="text-[10px] uppercase tracking-wider opacity-80">{getDaysLeftText(item.daysLeft)}</span>
                             </li>
                         ))}
                     </ul>

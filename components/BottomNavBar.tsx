@@ -14,21 +14,15 @@ const NavButton: React.FC<{
     Icon: React.ElementType;
     isActive: boolean;
     onClick: () => void;
-}> = ({ tabName, label, Icon, isActive, onClick }) => {
+}> = ({ label, Icon, isActive, onClick }) => {
     return (
         <button
             onClick={onClick}
-            className={`relative flex flex-col items-center justify-center w-full h-full group transition-colors duration-300 ${isActive ? 'text-[#1E4620]' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex flex-col items-center justify-center gap-1 transition-all duration-300 ${isActive ? 'text-green scale-110' : 'text-muted'}`}
             aria-label={label}
         >
-            {isActive && (
-                <span className="absolute -top-3 w-12 h-1 bg-[#1E4620] rounded-b-lg shadow-sm animate-fade-in"></span>
-            )}
-            <div className={`p-1.5 rounded-xl transition-all duration-300 ${isActive ? 'bg-green-50 scale-110' : ''}`}>
-                 <Icon className="h-6 w-6" />
-            </div>
-            
-            <span className="text-[10px] font-medium mt-1">
+            <Icon className="h-5 w-5" />
+            <span className="text-[9px] font-black uppercase tracking-[0.1em]">
                 {label}
             </span>
         </button>
@@ -44,7 +38,7 @@ const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onTabChange }) =
     ];
 
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 flex items-center justify-around pb-2 border-t border-slate-100">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-md bg-paper/96 border-t border-border z-50 flex items-center justify-around py-3 px-6">
              {navItems.map(item => (
                 <NavButton
                     key={item.tab}

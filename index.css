@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,700;1,9..144,900&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,700,800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Fraunces", serif;
+  --font-sans: "Cabinet Grotesk", sans-serif;
+
+  --color-cream: #f5f0e8;
+  --color-paper: #faf8f3;
+  --color-warm: #ede7d9;
+  --color-ink: #1a1a14;
+  --color-muted: #8a8570;
+  --color-border: #ddd8cc;
+  --color-green: #3d6b2e;
+  --color-green-light: #e8f0e2;
+  --color-green-mid: #6ea855;
+  --color-orange: #d4581a;
+  --color-orange-light: #faeee6;
+  --color-yellow: #c8a620;
+  --color-yellow-light: #fdf5dc;
+  --color-red: #b83030;
+  --color-red-light: #fdeaea;
+  --color-blue: #2a5e8c;
+  --color-blue-light: #e5eef6;
+
+  --radius-card: 18px;
+  --shadow-card: 0 2px 16px rgba(30,30,20,0.08);
+}
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+    font-size: 13px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-bold tracking-tight;
+  }
+
+  h1 { @apply text-[28px]; }
+  h2 { @apply text-[24px]; }
+  h3 { @apply text-[18px]; }
+}
+
+@utility card-base {
+  @apply bg-white rounded-card shadow-card transition-all duration-300;
+}
+
+@utility btn-primary {
+  @apply bg-green text-white rounded-[20px] font-extrabold uppercase tracking-[0.06em] px-6 py-3 transition-all active:scale-[0.98] hover:opacity-85;
+}
+
+@utility btn-secondary {
+  @apply bg-warm text-ink rounded-[20px] font-extrabold uppercase tracking-[0.06em] px-6 py-3 transition-all active:scale-[0.98] hover:opacity-85;
+}
+
+@utility btn-full {
+  @apply w-full rounded-[14px] py-[14px] text-[13px];
+}
+
+@utility label-small {
+  @apply text-[10px] uppercase font-bold tracking-[0.08em] text-muted;
+}
+
+@utility chip {
+  @apply border-[1.5px] border-border bg-white rounded-[20px] px-3 py-1.5 text-[10px] uppercase font-bold transition-all;
+}
+
+@utility chip-active {
+  @apply bg-ink text-white border-ink;
+}
+
+@utility badge {
+  @apply rounded-[10px] px-2 py-1 text-[10px] font-bold;
+}
+
+@utility macro-pill {
+  @apply rounded-[10px] px-2 py-0.5 text-[10px] font-bold;
+}
+
+@utility macro-prot { @apply bg-green-light text-green; }
+@utility macro-carb { @apply bg-blue-light text-blue; }
+@utility macro-fat { @apply bg-orange-light text-orange; }
+
+@utility list-item-card {
+  @apply card-base flex items-center gap-3 p-3 border-l-4 border-transparent hover:translate-x-[2px];
+}
+
+@utility progress-card {
+  @apply bg-green rounded-[20px] p-[18px] text-white relative overflow-hidden;
+
+  &::before,
+  &::after {
+    content: '';
+    @apply absolute rounded-full bg-white/10;
+  }
+
+  &::before {
+    @apply w-32 h-32 -top-10 -right-10;
+  }
+
+  &::after {
+    @apply w-20 h-20 -bottom-5 -left-5;
+  }
+}
+
+@utility bottom-nav {
+  @apply fixed bottom-0 left-0 right-0 backdrop-blur-md bg-paper/96 border-t border-border z-50;
+}
+
+@utility upload-zone {
+  @apply border-2 border-dashed border-border rounded-[16px] bg-white transition-all hover:border-green-mid hover:bg-green-light;
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  &::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}

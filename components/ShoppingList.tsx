@@ -1,50 +1,63 @@
 
 import React from 'react';
 import { ShoppingListItem } from '../types';
-import { ClipboardListIcon, TrashIcon } from './IconComponents';
+import { ClipboardListIcon, TrashIcon, SparklesIcon } from './IconComponents';
 
 interface ShoppingListProps {
     items: ShoppingListItem[];
     onToggleItem: (id: string) => void;
     onDeleteItem: (id: string) => void;
+    onAddAllToIngredients?: () => void;
 }
 
-const ShoppingList: React.FC<ShoppingListProps> = ({ items, onToggleItem, onDeleteItem }) => {
+const ShoppingList: React.FC<ShoppingListProps> = ({ items, onToggleItem, onDeleteItem, onAddAllToIngredients }) => {
     if (items.length === 0) return null;
 
     return (
-        <div className="bg-white p-6 rounded-3xl shadow-md animate-fade-in border border-slate-50 mt-0">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-slate-800 flex items-center">
-                    <ClipboardListIcon /> <span className="ml-2">Lista de Compras</span>
-                </h2>
-                <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-full">
-                    {items.length} ítems
-                </span>
+        <div className="card-base p-5 animate-slide-up">
+            <div className="flex flex-col gap-4 mb-6 border-b border-border pb-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-black text-ink uppercase tracking-widest flex items-center italic">
+                        <ClipboardListIcon className="w-4 h-4 mr-2" /> Lista de Compra
+                    </h2>
+                    <span className="badge bg-warm text-muted">
+                        {items.length} items
+                    </span>
+                </div>
+                
+                {onAddAllToIngredients && (
+                    <button 
+                        onClick={onAddAllToIngredients}
+                        className="btn-secondary btn-full flex items-center justify-center gap-2 text-[10px]"
+                    >
+                        <SparklesIcon className="w-3 h-3" />
+                        <span>Añadir todo al inventario</span>
+                    </button>
+                )}
             </div>
             
             <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
                 {items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-sm transition-all">
+                    <div key={item.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${item.checked ? 'bg-green-light border-green-mid/20 opacity-60' : 'bg-paper border-border hover:border-green-mid'}`}>
                         <div className="flex items-center gap-3 overflow-hidden">
                             <input 
                                 type="checkbox" 
                                 checked={item.checked} 
                                 onChange={() => onToggleItem(item.id)}
-                                className="w-5 h-5 rounded-md border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                                className="w-4 h-4 rounded border-border text-green focus:ring-green cursor-pointer"
                             />
                             <div className="flex flex-col min-w-0">
-                                <span className={`font-medium truncate text-sm ${item.checked ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                                <span className={`font-bold truncate text-[12px] ${item.checked ? 'text-muted line-through' : 'text-ink'}`}>
                                     {item.name}
                                 </span>
-                                <span className="text-[10px] text-slate-400 uppercase tracking-wide">{item.category}</span>
+                                <span className="label-small text-[8px]">{item.category}</span>
                             </div>
                         </div>
                         <button 
                             onClick={() => onDeleteItem(item.id)}
-                            className="text-slate-300 hover:text-red-500 p-2 rounded-full hover:bg-red-50 transition-colors"
+                            className="text-muted hover:text-red p-1 transition-colors"
                         >
-                            <TrashIcon />
+                            <TrashIcon className="w-4 h-4" />
                         </button>
                     </div>
                 ))}

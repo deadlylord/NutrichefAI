@@ -80,41 +80,41 @@ const ManualIngredientInput: React.FC<ManualIngredientInputProps> = ({ manualIng
     };
 
     return (
-        <div className="w-full space-y-4">
+        <div className="w-full space-y-6">
             <div>
-                <div className="flex justify-between items-end mb-2">
-                    <label htmlFor="manual-ingredient" className="block text-sm font-bold text-gray-700">
+                <div className="flex justify-between items-end mb-3">
+                    <label htmlFor="manual-ingredient" className="label-small ml-1">
                         Ingredientes Manuales
                     </label>
                     <button 
                         onClick={() => setShowQuickAdd(!showQuickAdd)}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition-colors ${showQuickAdd ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        className={`text-[10px] font-black px-4 py-2 rounded-full flex items-center gap-2 transition-all uppercase tracking-wider ${showQuickAdd ? 'bg-green text-paper shadow-md' : 'bg-warm text-muted hover:bg-border/50'}`}
                     >
-                        <PlusCircleIcon /> {showQuickAdd ? 'Ocultar Menú' : 'Selección Rápida'}
+                        <PlusCircleIcon className="w-3 h-3" /> {showQuickAdd ? 'Ocultar Menú' : 'Selección Rápida'}
                     </button>
                 </div>
                 
                 {/* Prominent Delete Button */}
                 {manualIngredients.length > 0 && (
-                    <div className="flex justify-end mb-2">
+                    <div className="flex justify-end mb-3">
                         <button 
                             onClick={handleClearAll}
-                            className="text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5 transition-colors bg-red-100 text-red-700 hover:bg-red-200 border border-red-200 shadow-sm"
+                            className="text-[10px] font-black px-4 py-2 rounded-full flex items-center gap-2 transition-all bg-red-light text-red hover:bg-red hover:text-white border border-red/10 shadow-sm uppercase tracking-wider"
                             title="Borrar toda la lista"
                         >
-                            <TrashIcon /> Borrar Todos ({manualIngredients.length})
+                            <TrashIcon className="w-3 h-3" /> Borrar Todos ({manualIngredients.length})
                         </button>
                     </div>
                 )}
 
                 {/* Quick Add Menu */}
                 {showQuickAdd && (
-                    <div className="mb-4 bg-white border border-green-100 rounded-2xl p-4 shadow-sm animate-fade-in">
-                        <p className="text-xs text-gray-500 mb-3 font-medium">Selecciona para agregar rápidamente:</p>
-                        <div className="space-y-4">
+                    <div className="mb-6 bg-paper border border-border rounded-[2rem] p-6 shadow-sm animate-slide-up">
+                        <p className="label-small mb-4 text-muted">Selección Estratégica:</p>
+                        <div className="space-y-6">
                             {Object.entries(QUICK_INGREDIENTS).map(([category, items]) => (
                                 <div key={category}>
-                                    <h4 className="text-[10px] uppercase tracking-wider font-bold text-green-700 mb-2 ml-1">{category}</h4>
+                                    <h4 className="text-[10px] uppercase tracking-widest font-black text-green mb-3 ml-1">{category}</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {items.map((item) => {
                                             const isAdded = manualIngredients.some(i => i.toLowerCase() === item.toLowerCase());
@@ -123,10 +123,10 @@ const ManualIngredientInput: React.FC<ManualIngredientInputProps> = ({ manualIng
                                                     key={item}
                                                     onClick={() => !isAdded && handleAddIngredient(item)}
                                                     disabled={isAdded}
-                                                    className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                                                    className={`text-[11px] font-black px-4 py-2 rounded-xl border transition-all uppercase tracking-wide ${
                                                         isAdded 
-                                                        ? 'bg-green-100 text-green-800 border-green-200 cursor-default opacity-70' 
-                                                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-green-400 hover:bg-white hover:shadow-sm'
+                                                        ? 'bg-green-light text-green border-green/20 cursor-default opacity-70' 
+                                                        : 'bg-white text-ink border-border hover:border-green hover:shadow-sm'
                                                     }`}
                                                 >
                                                     {item} {isAdded && '✓'}
@@ -142,12 +142,12 @@ const ManualIngredientInput: React.FC<ManualIngredientInputProps> = ({ manualIng
 
                 {/* Rich Search Input */}
                 <div className="relative">
-                    <div className="flex shadow-sm relative">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className="flex shadow-sm relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">
                             {isLoading ? (
-                                <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-4 h-4 border-2 border-green border-t-transparent rounded-full animate-spin"></div>
                             ) : (
-                                <SparklesIcon />
+                                <SparklesIcon className="w-5 h-5" />
                             )}
                         </div>
                         <input
@@ -162,11 +162,11 @@ const ManualIngredientInput: React.FC<ManualIngredientInputProps> = ({ manualIng
                                 }
                             }}
                             placeholder="Buscar alimento (ej. Atún, Proteína...)"
-                            className="flex-grow w-full pl-10 pr-4 py-3 border border-gray-200 rounded-l-xl focus:outline-none focus:ring-2 focus:ring-green-400 bg-slate-50 focus:bg-white transition-colors"
+                            className="flex-grow w-full pl-12 pr-4 py-4 border border-border rounded-l-2xl focus:outline-none focus:ring-1 focus:ring-green/20 bg-paper text-ink font-bold placeholder:text-muted/50 transition-all"
                         />
                         <button
                             onClick={() => handleAddIngredient(inputValue)}
-                            className="px-5 py-2.5 bg-slate-800 text-white font-semibold rounded-r-xl hover:bg-slate-900 disabled:bg-slate-300 transition-colors"
+                            className="px-8 py-4 bg-ink text-paper font-black rounded-r-2xl hover:bg-ink/90 disabled:bg-warm disabled:text-muted transition-all uppercase tracking-widest text-[11px]"
                             disabled={!inputValue.trim()}
                         >
                             Añadir
@@ -175,22 +175,22 @@ const ManualIngredientInput: React.FC<ManualIngredientInputProps> = ({ manualIng
 
                     {/* Rich Search Results Dropdown */}
                     {searchResults.length > 0 && (
-                        <ul className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto overflow-x-hidden animate-fade-in">
-                            <li className="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider sticky top-0">
+                        <ul className="absolute z-20 w-full mt-3 bg-white border border-border rounded-[2rem] shadow-xl max-h-72 overflow-y-auto overflow-x-hidden animate-slide-up p-2">
+                            <li className="px-6 py-3 text-[10px] font-black text-muted uppercase tracking-widest border-b border-border/50 sticky top-0 bg-white/90 backdrop-blur-sm">
                                 Resultados sugeridos
                             </li>
                             {searchResults.map((result, idx) => (
                                 <li
                                     key={idx}
                                     onClick={() => handleAddIngredient(result.name)}
-                                    className="px-4 py-3 cursor-pointer hover:bg-green-50 border-b border-gray-50 last:border-0 flex justify-between items-center group transition-colors"
+                                    className="px-6 py-4 cursor-pointer hover:bg-green-light border-b border-border/30 last:border-0 flex justify-between items-center group transition-all rounded-xl"
                                 >
-                                    <div>
-                                        <p className="text-sm font-bold text-gray-800 group-hover:text-green-800">{result.name}</p>
-                                        <p className="text-[10px] text-gray-500">{result.category} • {result.servingSize || 'Porción normal'}</p>
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-black text-ink group-hover:text-green italic">{result.name}</p>
+                                        <p className="text-[10px] text-muted font-bold uppercase tracking-wider">{result.category} • {result.servingSize || 'Porción normal'}</p>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-full group-hover:bg-white">
+                                        <span className="text-[10px] font-black text-muted bg-warm px-3 py-1 rounded-full group-hover:bg-white group-hover:text-ink transition-all">
                                             {result.calories} kcal
                                         </span>
                                     </div>
@@ -203,16 +203,16 @@ const ManualIngredientInput: React.FC<ManualIngredientInputProps> = ({ manualIng
 
             {/* Active Ingredient List */}
             {manualIngredients.length > 0 && (
-                <div className="bg-white p-3 rounded-2xl border border-slate-100">
+                <div className="bg-paper p-4 rounded-2xl border border-border">
                     <div className="flex flex-wrap gap-2">
                         {manualIngredients.map((ing, index) => (
-                            <span key={index} className="flex items-center bg-green-50 border border-green-100 text-green-800 text-sm font-medium pl-3 pr-1 py-1 rounded-lg group hover:border-green-300 transition-colors">
-                                {ing}
+                            <span key={index} className="flex items-center bg-white border border-border text-ink text-[11px] font-black pl-4 pr-2 py-2 rounded-xl group hover:border-green/30 transition-all shadow-sm">
+                                <span className="italic">{ing}</span>
                                 <button 
                                     onClick={() => handleRemoveIngredient(index)} 
-                                    className="ml-1 p-1 text-green-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-all"
+                                    className="ml-2 p-1.5 text-muted hover:text-red hover:bg-red-light rounded-lg transition-all"
                                 >
-                                    <TrashIcon />
+                                    <TrashIcon className="w-3.5 h-3.5" />
                                 </button>
                             </span>
                         ))}

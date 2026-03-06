@@ -6,63 +6,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NutriChef AI</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#1E4620',
-              secondary: '#8BA888',
-              accent: '#E8F5E9',
-              surface: '#F5F7F5',
-            },
-            fontFamily: {
-              sans: ['Poppins', 'sans-serif'],
-            }
-          }
-        }
+    <link rel="stylesheet" href="/index.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+        "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/"
       }
+    }
     </script>
-    <style>
-      body {
-        font-family: 'Poppins', sans-serif;
-        background-color: #F5F7F5; /* Reverted to soft original color */
-      }
-      /* Custom scrollbar for cleaner look */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #CBD5E1; 
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #94A3B8; 
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
-  <body class="h-full text-slate-800 antialiased selection:bg-green-200 selection:text-green-900">
+  </head>
+  <body class="h-full antialiased selection:bg-green-light selection:text-green">
     <div id="root" class="h-full"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

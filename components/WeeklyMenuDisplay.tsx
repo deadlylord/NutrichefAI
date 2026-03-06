@@ -158,32 +158,35 @@ const MealCard: React.FC<{
     };
 
     return (
-        <div className={`rounded-2xl shadow-md overflow-hidden flex flex-col transition-all duration-300 ${isConsumed ? 'bg-green-50 border-2 border-green-300 shadow-green-100' : 'bg-white border border-transparent hover:shadow-lg'}`}>
-            <div className="relative group min-h-[128px]">
+        <div className={`rounded-2xl shadow-sm overflow-hidden flex flex-col transition-all duration-300 ${isConsumed ? 'bg-green-light border-2 border-green-mid/20' : 'bg-paper border border-border hover:shadow-card'}`}>
+            <div className="relative group min-h-[100px]">
                 {meal.isImageLoading ? <ImageLoadingSpinner /> : (
                     meal.imageUrl ? 
-                        <img src={meal.imageUrl} alt={meal.name} className={`w-full h-32 object-cover ${isConsumed ? 'opacity-70 grayscale-[0.3]' : ''}`} /> :
-                        <ImagePlaceholder />
+                        <img src={meal.imageUrl} alt={meal.name} className={`w-full h-24 object-cover ${isConsumed ? 'opacity-70 grayscale-[0.3]' : ''}`} /> :
+                        <div className="w-full h-24 bg-warm flex flex-col items-center justify-center text-center p-2">
+                            <CameraIcon className="w-5 h-5 text-muted mb-1" />
+                            <span className="label-small text-[8px]">Sin imagen</span>
+                        </div>
                 )}
                 
                 {/* Action Buttons Overlay */}
                 {!meal.isImageLoading && (
-                    <div className={`absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2 transition-all duration-300 ${meal.imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
+                    <div className={`absolute inset-0 bg-ink/40 flex flex-col items-center justify-center gap-1.5 transition-all duration-300 ${meal.imageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
                         <button
                             onClick={(e) => { e.stopPropagation(); onSearch(); }}
-                            className="flex items-center gap-2 px-4 py-1.5 bg-white text-gray-800 font-bold rounded-full hover:bg-green-50 text-xs shadow-md transform hover:scale-105 transition-all w-32 justify-center"
+                            className="flex items-center gap-1.5 px-3 py-1 bg-paper text-ink font-black rounded-full hover:bg-green-light text-[9px] shadow-sm transform hover:scale-105 transition-all w-24 justify-center uppercase tracking-wider"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <span>Buscar Foto</span>
+                            <span>Buscar</span>
                         </button>
                         <button
                             onClick={(e) => { e.stopPropagation(); onGenerate(); }}
-                            className="flex items-center gap-2 px-4 py-1.5 bg-green-600 text-white font-bold rounded-full hover:bg-green-700 text-xs shadow-md transform hover:scale-105 transition-all w-32 justify-center"
+                            className="flex items-center gap-1.5 px-3 py-1 bg-green text-paper font-black rounded-full hover:opacity-90 text-[9px] shadow-sm transform hover:scale-105 transition-all w-24 justify-center uppercase tracking-wider"
                         >
-                            <SparklesIcon />
-                            <span>Generar IA</span>
+                            <SparklesIcon className="w-3 h-3" />
+                            <span>Generar</span>
                         </button>
                     </div>
                 )}
@@ -191,52 +194,52 @@ const MealCard: React.FC<{
                 {/* Checkbox Overlay */}
                 <button 
                     onClick={onToggle}
-                    className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all z-10 ${isConsumed ? 'bg-green-500 text-white scale-110' : 'bg-white text-gray-300 hover:text-green-400'}`}
+                    className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center shadow-sm transition-all z-10 ${isConsumed ? 'bg-green-mid text-white scale-110' : 'bg-paper/90 text-muted hover:text-green'}`}
                 >
                     <CheckCircleIcon />
                 </button>
             </div>
             
-            <div className="p-4 flex-grow flex flex-col">
-                <div className="flex justify-between items-center mb-2">
-                    <h4 className={`font-bold text-xs uppercase tracking-wider ${isConsumed ? 'text-green-800' : 'text-green-600'}`}>{mealType}</h4>
+            <div className="p-3 flex-grow flex flex-col">
+                <div className="flex justify-between items-center mb-1.5">
+                    <h4 className={`label-small ${isConsumed ? 'text-green' : 'text-green'}`}>{mealType}</h4>
                     <button 
                         onClick={(e) => { e.stopPropagation(); openYouTube(); }}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1 rounded-full transition-colors flex items-center gap-1"
+                        className="text-red hover:opacity-80 p-1 rounded-full transition-colors flex items-center gap-1"
                         title="Ver receta en YouTube"
                     >
                         <YouTubeIcon />
                     </button>
                 </div>
                 
-                <p className={`font-bold flex-grow mb-3 text-sm leading-tight ${isConsumed ? 'text-green-900 line-through decoration-green-500/50' : 'text-gray-800'}`}>{meal.name}</p>
+                <p className={`font-black flex-grow mb-2 text-[13px] leading-tight ${isConsumed ? 'text-ink opacity-50 line-through decoration-green' : 'text-ink'}`}>{meal.name}</p>
                 
                 {/* Balance Indicators Row */}
-                <div className="flex flex-wrap gap-1 mb-3">
+                <div className="flex flex-wrap gap-1 mb-2">
                     <BalanceIndicator type="veg" level={meal.foodBalance?.vegetables} />
                     <BalanceIndicator type="fruit" level={meal.foodBalance?.fruits} />
                     <BalanceIndicator type="prot" level={meal.foodBalance?.protein} />
                 </div>
 
-                <div className="mt-auto text-xs text-gray-500 pt-2 border-t border-gray-100">
+                <div className="mt-auto text-[10px] text-muted pt-2 border-t border-border">
                     <div className="flex items-baseline justify-between mb-1">
-                        <span className="font-bold text-base text-slate-800">{meal.calories} <span className="text-[10px] text-gray-400 font-normal">kcal</span></span>
+                        <span className="font-black text-sm text-ink tracking-tight">{meal.calories} <span className="label-small text-[8px]">kcal</span></span>
                     </div>
-                    <div className="flex justify-between font-medium text-[10px] text-gray-500">
-                        <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded border border-red-100">{meal.protein}g P</span>
-                        <span className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded border border-green-100">{meal.carbs}g C</span>
-                        <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-100">{meal.fat}g G</span>
+                    <div className="flex justify-between gap-1">
+                        <span className="bg-warm text-muted px-1.5 py-0.5 rounded text-[8px] font-black border border-border/50">{meal.protein}g P</span>
+                        <span className="bg-warm text-muted px-1.5 py-0.5 rounded text-[8px] font-black border border-border/50">{meal.carbs}g C</span>
+                        <span className="bg-warm text-muted px-1.5 py-0.5 rounded text-[8px] font-black border border-border/50">{meal.fat}g G</span>
                     </div>
                 </div>
 
                 {(meal.instructions) && (
-                     <div className="mt-2 pt-2 border-t border-gray-100">
-                        <details className="text-xs group">
-                            <summary className="cursor-pointer text-gray-500 font-semibold hover:text-gray-800 flex items-center transition-colors">
-                                <BookOpenIcon />
-                                <span className="ml-1.5">Ver Instrucciones</span>
+                     <div className="mt-2 pt-2 border-t border-border">
+                        <details className="text-[10px] group">
+                            <summary className="cursor-pointer text-muted font-black hover:text-ink flex items-center transition-colors uppercase tracking-widest text-[8px]">
+                                <BookOpenIcon className="w-3 h-3" />
+                                <span className="ml-1">Receta</span>
                             </summary>
-                            <div className="mt-2 p-3 bg-slate-50 border border-slate-100 rounded-xl text-gray-600 whitespace-pre-wrap leading-relaxed shadow-inner">
+                            <div className="mt-2 p-2 bg-paper border border-border rounded-xl text-ink whitespace-pre-wrap leading-relaxed shadow-inner text-[10px]">
                                 {meal.instructions}
                             </div>
                         </details>
@@ -343,59 +346,59 @@ const ExtraFoodInput: React.FC<{ onAdd: (food: ExtraFoodItem) => void; family: F
     };
 
     return (
-        <div className="mt-4">
-            {/* Member Selection for Addition */}
-             <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-gray-500">Para:</span>
-                <select 
-                    value={assignedTo} 
-                    onChange={e => setAssignedTo(e.target.value)}
-                    className="text-xs border border-gray-300 rounded-lg p-1.5 bg-white text-gray-700 focus:ring-green-500 focus:border-green-500"
-                >
-                    <option value="all">Toda la Familia</option>
-                    {family.map(m => (
-                        <option key={m.id} value={m.id}>{m.name}</option>
-                    ))}
-                </select>
-            </div>
+        <div className="mt-4 animate-slide-up">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3 bg-warm/50 px-4 py-2 rounded-2xl border border-border/50">
+                    <span className="label-small text-[10px]">Asignar a:</span>
+                    <select 
+                        value={assignedTo} 
+                        onChange={e => setAssignedTo(e.target.value)}
+                        className="text-[11px] font-black bg-transparent text-ink focus:outline-none cursor-pointer uppercase tracking-wider"
+                    >
+                        <option value="all">Toda la Familia</option>
+                        {family.map(m => (
+                            <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                    </select>
+                </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-                <button 
-                    onClick={() => { setShowQuickMenu(!showQuickMenu); setIsOpen(false); }}
-                    className={`flex items-center text-sm font-medium px-4 py-2 rounded-full transition-colors shadow-sm ${showQuickMenu ? 'bg-green-600 text-white' : 'text-green-600 bg-white border border-green-200 hover:bg-green-50'}`}
-                >
-                    <PlusCircleIcon />
-                    <span className="ml-2">Agregar Rápido</span>
-                </button>
-                <button 
-                    onClick={() => { setIsOpen(!isOpen); setShowQuickMenu(false); }}
-                    className={`flex items-center text-sm font-medium px-4 py-2 rounded-full transition-colors shadow-sm ${isOpen ? 'bg-slate-800 text-white' : 'text-slate-600 bg-white border border-slate-200 hover:bg-slate-50'}`}
-                >
-                    <span>Manual / Búsqueda</span>
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={() => { setShowQuickMenu(!showQuickMenu); setIsOpen(false); }}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${showQuickMenu ? 'bg-green text-paper' : 'bg-paper text-green border border-green/20 hover:bg-green-light'}`}
+                    >
+                        <PlusCircleIcon className="w-3 h-3" />
+                        <span>Agregar Rápido</span>
+                    </button>
+                    <button 
+                        onClick={() => { setIsOpen(!isOpen); setShowQuickMenu(false); }}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-sm ${isOpen ? 'bg-ink text-paper' : 'bg-paper text-muted border border-border hover:bg-warm'}`}
+                    >
+                        <span>Manual / Búsqueda</span>
+                    </button>
+                </div>
             </div>
 
             {/* Quick Menu Accordion */}
             {showQuickMenu && (
-                <div className="mt-4 bg-white p-4 rounded-2xl border border-green-100 shadow-sm animate-fade-in">
-                    <h4 className="font-bold text-gray-800 text-sm mb-3">
-                        Selecciona para agregar a <span className="text-green-600">{assignedTo === 'all' ? 'Todos' : family.find(f => f.id === assignedTo)?.name}</span>:
+                <div className="bg-white p-6 rounded-[2rem] border border-green/10 shadow-sm animate-slide-up mb-4">
+                    <h4 className="label-small mb-4">
+                        Selección rápida para <span className="text-green italic">{assignedTo === 'all' ? 'Todos' : family.find(f => f.id === assignedTo)?.name}</span>:
                     </h4>
-                    <div className="space-y-3">
+                    <div className="space-y-6">
                         {Object.entries(QUICK_ADDS).map(([category, items]) => (
                             <div key={category}>
-                                <h5 className="text-xs font-bold text-green-700 uppercase mb-2 ml-1">{category}</h5>
+                                <h5 className="text-[10px] font-black text-green uppercase tracking-widest mb-3 ml-1">{category}</h5>
                                 <div className="flex flex-wrap gap-2">
                                     {items.map((item, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => handleQuickAdd(item)}
-                                            className="group flex items-center bg-slate-50 hover:bg-green-600 hover:text-white border border-slate-200 rounded-lg px-3 py-1.5 transition-all active:scale-95"
+                                            className="group flex items-center gap-2 bg-paper hover:bg-green border border-border rounded-xl px-4 py-2 transition-all active:scale-95"
                                         >
-                                            <span className="text-sm font-medium">{item.name}</span>
-                                            <span className="ml-1 text-[10px] text-gray-400 group-hover:text-green-200">({item.cal})</span>
-                                            <span className="ml-2 bg-green-100 text-green-700 group-hover:bg-white group-hover:text-green-700 rounded-full w-4 h-4 flex items-center justify-center text-xs">+</span>
+                                            <span className="text-[11px] font-black text-ink group-hover:text-paper italic">{item.name}</span>
+                                            <span className="text-[9px] text-muted group-hover:text-paper/70">({item.cal} kcal)</span>
+                                            <span className="bg-green-light text-green group-hover:bg-white group-hover:text-green rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-black">+</span>
                                         </button>
                                     ))}
                                 </div>
@@ -407,15 +410,15 @@ const ExtraFoodInput: React.FC<{ onAdd: (food: ExtraFoodItem) => void; family: F
 
             {/* Manual Form */}
             {isOpen && (
-                <div className="mt-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm animate-fade-in relative">
-                    <h4 className="font-bold text-gray-800 text-sm mb-2">Registrar Alimento Personalizado</h4>
+                <div className="bg-white p-6 rounded-[2rem] border border-border shadow-sm animate-slide-up mb-4">
+                    <h4 className="label-small mb-4">Registrar Alimento Personalizado</h4>
                     
-                    <form onSubmit={handleManualSubmit} className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                        <div className="col-span-2 sm:col-span-5 relative flex gap-2">
+                    <form onSubmit={handleManualSubmit} className="space-y-4">
+                        <div className="relative flex gap-2">
                              <input 
                                 type="text" 
                                 placeholder="Alimento (ej. Proteína, Empanada)" 
-                                className="flex-grow rounded-lg border-gray-300 text-sm p-2 bg-slate-50 focus:ring-2 focus:ring-green-400 outline-none" 
+                                className="flex-grow px-4 py-3 rounded-2xl border border-border focus:border-green focus:ring-1 focus:ring-green/20 bg-paper text-ink font-bold placeholder:text-muted/50 transition-all text-sm" 
                                 value={name} 
                                 onChange={e => setName(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSearch(); } }}
@@ -425,47 +428,58 @@ const ExtraFoodInput: React.FC<{ onAdd: (food: ExtraFoodItem) => void; family: F
                                 type="button" 
                                 onClick={handleSearch}
                                 disabled={isSearching || !name}
-                                className="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-700 disabled:opacity-50 flex items-center"
-                                title="Buscar"
+                                className="bg-ink text-paper px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-ink/90 disabled:opacity-50 transition-all flex items-center gap-2"
                             >
                                 {isSearching ? (
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    <div className="w-4 h-4 border-2 border-paper border-t-transparent rounded-full animate-spin"></div>
                                 ) : (
-                                    <span className="flex items-center gap-1">🔍 Buscar</span>
+                                    <><span>🔍</span> Buscar</>
                                 )}
                             </button>
                         </div>
                         
                         {/* Search Results */}
                         {searchResults.length > 0 && (
-                            <div className="col-span-2 sm:col-span-5 bg-white border border-green-200 rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto">
-                                <p className="p-2 text-[10px] bg-green-50 text-green-700 font-bold uppercase tracking-wider">Resultados Sugeridos</p>
+                            <div className="bg-white border border-border rounded-2xl shadow-xl z-20 max-h-56 overflow-y-auto p-2">
+                                <p className="px-4 py-2 text-[10px] font-black text-muted uppercase tracking-widest border-b border-border/50">Resultados Sugeridos</p>
                                 {searchResults.map((res, idx) => (
                                     <div 
                                         key={idx}
                                         onClick={() => selectSearchResult(res)}
-                                        className="p-2 hover:bg-green-50 cursor-pointer border-b border-gray-50 flex justify-between items-center text-sm"
+                                        className="p-3 hover:bg-green-light cursor-pointer border-b border-border/30 last:border-0 flex justify-between items-center rounded-xl transition-all"
                                     >
-                                        <div>
-                                            <span className="font-bold text-gray-800 block">{res.name}</span>
-                                            <span className="text-[10px] text-gray-500">{res.category}</span>
+                                        <div className="space-y-0.5">
+                                            <span className="font-black text-ink block text-sm italic">{res.name}</span>
+                                            <span className="text-[10px] text-muted font-bold uppercase tracking-wider">{res.category}</span>
                                         </div>
-                                        <div className="text-right">
-                                            <span className="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{res.calories} kcal</span>
-                                        </div>
+                                        <span className="text-[10px] font-black text-muted bg-warm px-2 py-1 rounded-full">{res.calories} kcal</span>
                                     </div>
                                 ))}
                             </div>
                         )}
                        
-                        <input type="number" placeholder="Kcal" className="rounded-lg border-gray-300 text-sm p-2 bg-slate-50" value={cals || ''} onChange={e => setCals(Number(e.target.value))} />
-                        <input type="number" placeholder="Prot" className="rounded-lg border-gray-300 text-sm p-2 bg-slate-50" value={prot || ''} onChange={e => setProt(Number(e.target.value))} />
-                        <input type="number" placeholder="Carb" className="rounded-lg border-gray-300 text-sm p-2 bg-slate-50" value={carbs || ''} onChange={e => setCarbs(Number(e.target.value))} />
-                        <input type="number" placeholder="Grasa" className="rounded-lg border-gray-300 text-sm p-2 bg-slate-50" value={fat || ''} onChange={e => setFat(Number(e.target.value))} />
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black uppercase text-muted ml-1">Kcal</label>
+                                <input type="number" className="w-full px-3 py-2 rounded-xl border border-border bg-paper text-ink font-bold text-sm" value={cals || ''} onChange={e => setCals(Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black uppercase text-muted ml-1">Prot (g)</label>
+                                <input type="number" className="w-full px-3 py-2 rounded-xl border border-border bg-paper text-ink font-bold text-sm" value={prot || ''} onChange={e => setProt(Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black uppercase text-muted ml-1">Carb (g)</label>
+                                <input type="number" className="w-full px-3 py-2 rounded-xl border border-border bg-paper text-ink font-bold text-sm" value={carbs || ''} onChange={e => setCarbs(Number(e.target.value))} />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black uppercase text-muted ml-1">Grasa (g)</label>
+                                <input type="number" className="w-full px-3 py-2 rounded-xl border border-border bg-paper text-ink font-bold text-sm" value={fat || ''} onChange={e => setFat(Number(e.target.value))} />
+                            </div>
+                        </div>
                         
-                        <div className="col-span-2 sm:col-span-5 flex justify-end gap-2 mt-2">
-                            <button type="button" onClick={() => setIsOpen(false)} className="text-gray-500 text-xs font-semibold px-3 py-1.5">Cancelar</button>
-                            <button type="submit" className="bg-green-600 text-white text-xs font-bold px-6 py-1.5 rounded-full hover:bg-green-700 shadow-lg shadow-green-100">Guardar</button>
+                        <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                            <button type="button" onClick={() => setIsOpen(false)} className="text-muted text-[10px] font-black uppercase tracking-widest px-4 py-2 hover:bg-warm rounded-xl transition-all">Cancelar</button>
+                            <button type="submit" className="btn-primary px-8 py-2 text-[10px]">Guardar Alimento</button>
                         </div>
                     </form>
                 </div>
@@ -481,21 +495,20 @@ const DailyFamilySummary: React.FC<{
     extras: ExtraFoodItem[]
 }> = ({ family, plannedMacros, extras }) => {
     return (
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mb-6">
-            <h4 className="font-bold text-gray-800 mb-1 flex items-center gap-2 text-lg">
-                <span className="w-3 h-3 rounded-full bg-green-500"></span>
+        <div className="card-base p-6 mb-8 bg-paper/50">
+            <h4 className="text-lg font-black text-ink mb-2 flex items-center gap-2 italic">
+                <span className="w-3 h-3 rounded-full bg-green shadow-sm"></span>
                 Análisis de Cobertura Familiar
             </h4>
-            <p className="text-xs text-gray-500 mb-4">
-                Proyección basada en el menú del día + extras asignados.
+            <p className="label-small mb-6 text-muted">
+                Proyección basada en el menú del día + extras asignados por miembro.
             </p>
-            <div className="space-y-5">
+            <div className="space-y-6">
                 {family.map(member => {
                     const portionMultiplier = plannedMacros.calories > 0 
                         ? member.dailyRequirements.calories / plannedMacros.calories 
                         : 1;
                     
-                    // Filter extras for this member (assigned specifically OR shared)
                     const memberExtras = extras.filter(e => e.assignedTo === member.id || !e.assignedTo);
                     const extrasTotals = memberExtras.reduce((acc, curr) => ({
                         p: acc.p + curr.protein,
@@ -510,48 +523,47 @@ const DailyFamilySummary: React.FC<{
                     };
 
                     return (
-                        <div key={member.id} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <div className="flex justify-between items-center mb-2">
+                        <div key={member.id} className="bg-white/40 p-5 rounded-[2rem] border border-border/50 shadow-sm">
+                            <div className="flex justify-between items-center mb-4">
                                 <div>
-                                    <span className="font-bold text-gray-800 block">{member.name}</span>
-                                    <span className="text-[10px] text-gray-500 uppercase tracking-wide font-semibold">
+                                    <span className="font-black text-ink block italic text-base">{member.name}</span>
+                                    <span className="label-small text-[9px]">
                                         Meta: {member.dailyRequirements.calories.toFixed(0)} kcal
                                     </span>
                                 </div>
                                 <div className="text-right">
-                                    <span className={`block text-sm font-bold px-2 py-0.5 rounded-md ${portionMultiplier > 1.1 ? 'bg-blue-100 text-blue-700' : portionMultiplier < 0.9 ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                                    <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${portionMultiplier > 1.1 ? 'bg-blue-light text-blue' : portionMultiplier < 0.9 ? 'bg-orange-light text-orange' : 'bg-green-light text-green'}`}>
                                         Servir: x{portionMultiplier.toFixed(1)}
                                     </span>
                                 </div>
                             </div>
                             
-                            {/* Visual List of Extras for this person */}
                             {memberExtras.length > 0 && (
-                                <div className="mb-3 flex flex-wrap gap-1">
+                                <div className="mb-4 flex flex-wrap gap-1.5">
                                     {memberExtras.map(ex => (
-                                        <span key={ex.id} className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">
+                                        <span key={ex.id} className="text-[9px] font-bold bg-warm/50 border border-border/30 px-2 py-0.5 rounded-lg text-muted italic">
                                             + {ex.name}
                                         </span>
                                     ))}
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <ProgressBar 
                                     label="Proteína" 
-                                    color="bg-red-400" 
+                                    color="bg-red" 
                                     value={projected.protein} 
                                     total={member.dailyRequirements.protein} 
                                 />
                                 <ProgressBar 
                                     label="Carb" 
-                                    color="bg-green-400" 
+                                    color="bg-green" 
                                     value={projected.carbs} 
                                     total={member.dailyRequirements.carbs} 
                                 />
                                 <ProgressBar 
                                     label="Grasa" 
-                                    color="bg-blue-400" 
+                                    color="bg-blue" 
                                     value={projected.fat} 
                                     total={member.dailyRequirements.fat} 
                                 />
@@ -610,15 +622,15 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
   };
 
   return (
-    <div className="space-y-8">
-      <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-md animate-fade-in">
-         <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center">
-            <CalendarIcon /> <span className="ml-2">Tu Menú Semanal Nutricional</span>
+    <div className="space-y-8 animate-slide-up">
+      <div className="card-base p-6">
+         <h2 className="text-2xl font-black mb-4 text-ink flex items-center italic">
+            <CalendarIcon className="w-6 h-6 mr-2" /> <span>Tu Menú Semanal <span className="text-green">Nutricional</span></span>
         </h2>
         <div className="space-y-3">
             {weekDays.map((day, index) => {
                 const consumedTotal = calculateDailyTotal(day, true);
-                const plannedTotal = calculateDailyTotal(day, false); // Base plan without extras
+                const plannedTotal = calculateDailyTotal(day, false);
                 const extras = extraFoods[day] || [];
                 const dailyMenu = menu[day];
 
@@ -629,34 +641,34 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
                 return (
                     <details
                         key={day}
-                        className="group bg-gray-50/70 rounded-2xl open:ring-2 open:ring-green-200 transition-all duration-300"
+                        className="group bg-paper rounded-2xl border border-border open:ring-2 open:ring-green/10 transition-all duration-300"
                         open={index === 0}
                     >
-                        <summary className="p-4 list-none flex justify-between items-center cursor-pointer hover:bg-gray-100 rounded-2xl">
+                        <summary className="p-4 list-none flex justify-between items-center cursor-pointer hover:bg-warm/30 rounded-2xl">
                             <div className="flex items-center gap-3">
-                                <h3 className="text-xl font-bold text-gray-800 capitalize">{dayTranslations[day]}</h3>
+                                <h3 className="text-xl font-black text-ink italic capitalize">{dayTranslations[day]}</h3>
                                 {family.length > 0 && (
                                     <div className="hidden sm:flex gap-1 flex-col justify-center">
-                                        <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                            <div className="bg-green-500 h-full transition-all duration-500" style={{width: `${Math.min(100, mainProgress)}%`}}></div>
+                                        <div className="w-24 h-1.5 bg-warm rounded-full overflow-hidden">
+                                            <div className="bg-green h-full transition-all duration-500" style={{width: `${Math.min(100, mainProgress)}%`}}></div>
                                         </div>
                                     </div>
                                 )}
                             </div>
                             
                             <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-1.5 bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full w-fit">
+                                <div className="flex items-center gap-1.5 bg-blue-light text-blue text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                                     <WaterDropIcon />
                                     <span>{dailyMenu.waterIntakeLiters.toFixed(1)} L</span>
                                 </div>
-                                <div className="w-5 h-5 text-gray-500 transform transition-transform duration-300 group-open:rotate-180">
+                                <div className="w-5 h-5 text-muted transform transition-transform duration-300 group-open:rotate-180">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                                     </svg>
                                 </div>
                             </div>
                         </summary>
-                        <div className="p-4 border-t border-gray-200">
+                        <div className="p-4 border-t border-border bg-paper/30">
                             
                             <DailyBalanceOverview menu={dailyMenu} />
 
@@ -679,19 +691,19 @@ const WeeklyMenuDisplay: React.FC<WeeklyMenuDisplayProps> = ({
                                 ))}
                             </div>
 
-                            <div className="mt-6 pt-4 border-t border-gray-100">
+                            <div className="mt-6 pt-4 border-t border-border">
                                 {extras.length > 0 && (
                                     <div className="mb-4">
-                                        <h4 className="font-bold text-gray-700 text-sm mb-2">Extras Agregados:</h4>
+                                        <h4 className="label-small mb-2">Extras Agregados:</h4>
                                         <div className="flex flex-wrap gap-2">
                                             {extras.map(item => (
-                                                <span key={item.id} className="inline-flex items-center bg-orange-50 border border-orange-200 text-orange-800 text-xs px-2 py-1 rounded-lg">
+                                                <span key={item.id} className="inline-flex items-center bg-orange-light border border-orange/20 text-orange text-[10px] font-bold px-2 py-1 rounded-lg">
                                                     {item.name} ({item.calories} kcal)
-                                                    {item.assignedTo && <span className="ml-1 text-[10px] text-orange-600 bg-orange-100 px-1 rounded">
+                                                    {item.assignedTo && <span className="ml-1 text-[8px] text-orange bg-orange/10 px-1 rounded uppercase tracking-wider">
                                                         {family.find(f => f.id === item.assignedTo)?.name || 'Miembro'}
                                                     </span>}
-                                                    <button onClick={() => onRemoveExtra(day, item.id)} className="ml-2 text-orange-600 hover:text-red-600">
-                                                        <TrashIcon />
+                                                    <button onClick={() => onRemoveExtra(day, item.id)} className="ml-2 text-orange hover:text-red">
+                                                        <TrashIcon className="w-3 h-3" />
                                                     </button>
                                                 </span>
                                             ))}

@@ -572,6 +572,22 @@ function App() {
       setShoppingList(prev => prev.filter(item => item.id !== id));
   };
 
+  const handleAddAllFromShoppingList = () => {
+      const itemsToAdd = shoppingList.map(item => item.name);
+      if (itemsToAdd.length === 0) return;
+      
+      setManualIngredients(prev => {
+          const combined = [...prev, ...itemsToAdd];
+          return Array.from(new Set(combined.map(i => i.toLowerCase())))
+              .map(i => i.charAt(0).toUpperCase() + i.slice(1));
+      });
+      
+      // Optionally clear shopping list or just notify
+      // setShoppingList([]); 
+      setActiveTab('foods');
+      setAnalysisResult(null); // Force re-analysis if we were in results state
+  };
+
   // --- Meal Tracking Handlers ---
 
   const handleToggleMealConsumption = (day: string, mealType: string) => {
@@ -610,19 +626,19 @@ function App() {
   const canAnalyze = imageFiles.length > 0 || manualIngredients.length > 0;
   
   return (
-    <div className="min-h-screen font-sans flex flex-col bg-slate-50/50">
+    <div className="min-h-screen bg-cream flex flex-col selection:bg-green-light selection:text-green">
       <Header activeTab={activeTab} onTabChange={setActiveTab} familyName={familyName} onFamilyNameChange={handleFamilyNameChange} />
       
       {cloudError && (
-          <div className="bg-amber-50 border-b border-amber-100 px-4 py-1 text-center">
-              <p className="text-[10px] text-amber-600 font-medium flex items-center justify-center">
+          <div className="bg-yellow-light border-b border-border px-4 py-1 text-center">
+              <p className="label-small text-yellow flex items-center justify-center">
                   <span className="mr-1.5">☁️</span> 
-                  Modo Local: Sincronización en la nube no disponible. Tus datos se guardan en este navegador.
+                  Modo Local: Sincronización en la nube no disponible.
               </p>
           </div>
       )}
 
-      <main className="flex-grow pt-24 pb-28 md:pb-10">
+      <main className="flex-grow pt-20 pb-24 md:pb-10">
           <div className="container mx-auto px-4 lg:px-8 max-w-7xl">
               {error && (
                   <div className="my-4 bg-red-100 text-red-700 p-4 rounded-3xl animate-fade-in" role="alert">
@@ -632,9 +648,12 @@ function App() {
               )}
 
               {isLoading && (
-                  <div className="text-center my-12 animate-fade-in">
-                      <p className="text-lg text-gray-600 font-medium">{loadingMessage}</p>
+                  <div className="fixed inset-0 bg-cream/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center p-6 text-center">
                       <LoadingSpinner />
+                      <div className="mt-8 max-w-sm animate-slide-up">
+                          <h3 className="text-xl font-black text-ink mb-2">Cocinando tu plan...</h3>
+                          <p className="text-muted text-sm italic">"La buena comida toma su tiempo, la inteligencia artificial también."</p>
+                      </div>
                   </div>
               )}
 
@@ -643,46 +662,54 @@ function App() {
                       <div className="animate-fade-in">
                           {!analysisResult ? (
                             // INITIAL STATE (No analysis)
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                 {/* LEFT COLUMN: INPUTS */}
-                                <div className="lg:col-span-7 space-y-6">
+                                <div className="lg:col-span-8 space-y-6">
                                      <SpoilageAlerts items={expiringItems} />
-                                     <div className="bg-white p-6 md:p-8 rounded-3xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 space-y-6">
-                                        <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                                            <span className="bg-green-100 p-2 rounded-lg mr-3 text-green-700">1</span>
-                                            Añade tus Ingredientes
-                                        </h2>
-                                        
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label htmlFor="purchase-date" className="block text-sm font-bold text-gray-700 mb-2">Fecha de Compra</label>
+                                     <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                                                Inventario <span className="text-green-600">Actual</span>
+                                            </h2>
+                                            <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+                                                <label htmlFor="purchase-date" className="text-[10px] font-bold text-slate-400 uppercase ml-2">Fecha:</label>
                                                 <input 
                                                     type="date" 
                                                     id="purchase-date"
                                                     value={purchaseDate}
                                                     onChange={(e) => setPurchaseDate(e.target.value)}
-                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-slate-50"
+                                                    className="bg-transparent text-sm font-bold text-slate-700 focus:outline-none px-2 py-1"
                                                 />
                                             </div>
-                                            <div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">1</div>
+                                                    <h3 className="font-bold text-slate-700">Manual</h3>
+                                                </div>
                                                 <ManualIngredientInput manualIngredients={manualIngredients} onIngredientsChange={setManualIngredients} />
+                                            </div>
+                                            
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-xs">2</div>
+                                                    <h3 className="font-bold text-slate-700">Foto / Recibo</h3>
+                                                </div>
+                                                <ImageUploader 
+                                                    onFilesChange={handleFilesChange}
+                                                    files={imageFiles}
+                                                    isLoading={isLoading}
+                                                />
                                             </div>
                                         </div>
 
-                                        <div className="pt-4 border-t border-gray-100">
-                                            <p className="text-center text-gray-500 font-medium mb-4 text-sm">Sube fotos de tus recibos o productos</p>
-                                            <ImageUploader 
-                                                onFilesChange={handleFilesChange}
-                                                files={imageFiles}
-                                                isLoading={isLoading}
-                                            />
-                                        </div>
-
-                                        <div className="pt-2">
+                                        <div className="mt-10">
                                             <button
                                             onClick={handleAnalysis}
                                             disabled={!canAnalyze || isLoading}
-                                            className="w-full py-4 bg-[#1E4620] text-white font-bold rounded-2xl hover:bg-green-900 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all transform active:scale-[0.98] shadow-xl shadow-green-900/20 flex items-center justify-center gap-2 text-lg"
+                                            className="w-full py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed transition-all transform active:scale-[0.98] shadow-xl shadow-slate-200 flex items-center justify-center gap-3 text-lg"
                                             >
                                             <SparklesIcon />
                                             <span>{isLoading ? 'Analizando...' : `Analizar Compra`}</span>
@@ -692,7 +719,7 @@ function App() {
                                 </div>
                                 
                                 {/* RIGHT COLUMN: HISTORY */}
-                                <div className="lg:col-span-5">
+                                <div className="lg:col-span-4 space-y-6">
                                     {purchaseHistory.length > 0 && (
                                         <PurchaseHistoryDisplay 
                                             history={purchaseHistory} 
@@ -700,37 +727,58 @@ function App() {
                                             onDelete={handleDeleteHistory}
                                         />
                                     )}
+                                    {shoppingList.length > 0 && (
+                                        <ShoppingList 
+                                            items={shoppingList} 
+                                            onToggleItem={toggleShoppingItem} 
+                                            onDeleteItem={deleteShoppingItem} 
+                                            onAddAllToIngredients={handleAddAllFromShoppingList}
+                                        />
+                                    )}
                                 </div>
                             </div>
                           ) : (
                              // RESULTS STATE
-                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                                  {/* LEFT COLUMN: SUMMARY & LIST */}
-                                 <div className="lg:col-span-4 space-y-6 h-fit lg:sticky lg:top-24">
-                                    <div className="bg-green-900 text-white p-6 rounded-3xl shadow-lg">
-                                        <h2 className="text-xl font-bold mb-2">Todo listo!</h2>
-                                        <p className="text-green-100 text-sm mb-6">Hemos analizado tus productos. Ahora puedes generar un plan personalizado.</p>
-                                        <button
-                                            onClick={() => handleGenerateMenu(false)}
-                                            disabled={isLoading}
-                                            className="w-full py-3 bg-white text-green-900 font-bold rounded-xl hover:bg-green-50 transition-colors shadow-md flex items-center justify-center gap-2"
-                                        >
-                                            <CalendarIcon />
-                                            <span>Crear Menú Semanal</span>
-                                        </button>
-                                        <button
-                                            onClick={handleResetInventory}
-                                            className="w-full mt-3 py-2 border border-green-700 text-green-200 text-sm font-semibold rounded-xl hover:bg-green-800 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <TrashIcon />
-                                            <span>Eliminar Inventario</span>
-                                        </button>
+                                 <div className="lg:col-span-4 space-y-6">
+                                    <div className="card-base p-6 bg-paper border-border shadow-sm">
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className="w-12 h-12 bg-green-light rounded-2xl flex items-center justify-center text-green">
+                                                <SparklesIcon className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-black text-ink italic">¡Analizado!</h2>
+                                                <p className="label-small text-muted">Inventario actualizado</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                            <button
+                                                onClick={() => handleGenerateMenu(false)}
+                                                disabled={isLoading}
+                                                className="btn-primary w-full py-4 flex items-center justify-center gap-3"
+                                            >
+                                                <CalendarIcon className="w-5 h-5" />
+                                                <span>Crear Menú Semanal</span>
+                                            </button>
+                                            <button
+                                                onClick={handleResetInventory}
+                                                className="w-full py-3 bg-warm text-muted text-[10px] font-black rounded-2xl hover:bg-border/50 transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
+                                            >
+                                                <TrashIcon className="w-3.5 h-3.5" />
+                                                <span>Reiniciar Todo</span>
+                                            </button>
+                                        </div>
                                     </div>
+
                                     <ShoppingList 
                                         items={shoppingList} 
                                         onToggleItem={toggleShoppingItem} 
                                         onDeleteItem={deleteShoppingItem} 
+                                        onAddAllToIngredients={handleAddAllFromShoppingList}
                                      />
+                                    
                                     <div className="hidden lg:block">
                                          <SpoilageAlerts items={expiringItems} />
                                     </div>
